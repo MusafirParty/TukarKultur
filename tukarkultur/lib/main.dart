@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/map_screen.dart';
-import 'screens/chat_screen.dart';
+import 'screens/chat_list_screen.dart';
 import 'screens/notes_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/rankings_screen.dart';
@@ -45,7 +45,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _pages = [
     HomeScreen(),
     MapScreen(),
-    ChatScreen(),
+    ChatListScreen(),
     NotesScreen(),
     ProfileScreen(),
   ];
