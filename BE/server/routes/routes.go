@@ -17,7 +17,7 @@ func SetupRoutes(router *gin.Engine, userHandler *handlers.UserHandler) {
 	})
 
 	// API v1 routes
-	v1 := router.Group("/api")
+	v1 := router.Group("/api/v1")
 	{
 		// User routes
 		users := v1.Group("/users")
