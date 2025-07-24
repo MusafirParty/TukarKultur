@@ -1,3 +1,4 @@
 *.env
 BE/server/.env
 ./BE/server/.env
+BE/server/.env
