@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-
 	"tukarkultur/api/database"
 	"tukarkultur/api/handlers"
 	"tukarkultur/api/repository"
