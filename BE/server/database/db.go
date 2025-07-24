@@ -1,1 +1,4 @@
-package database
+package db
+
+type Database struct {
+}

@@ -38,10 +38,13 @@ CREATE TABLE friends (
 
 -- Meetups (actual real-world meetings)
 CREATE TABLE meetups (
+    connection_id UUID REFERENCES connections(id) ON DELETE CASCADE,
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     proposed_by UUID REFERENCES users(id) ON DELETE CASCADE,
     location_name VARCHAR(255),
     location_address TEXT,
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
     meetup_time TIMESTAMP WITH TIME ZONE,
     status VARCHAR(20) DEFAULT 'proposed', -- proposed, confirmed, completed, cancelled
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

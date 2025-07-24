@@ -1,9 +1,22 @@
 package main
 
 import (
-	"fmt"
+	"tukarkultur/api/models"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+)
+
+var (
+	upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+	clients = make(map[*websocket.Conn]bool)
+	broadcast = make(chan models.Message)
 )
 
 func main() {
-	fmt.Println("Hello World")
+	router := gin.Default()
+	router.
 }
