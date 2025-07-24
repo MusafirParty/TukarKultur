@@ -8,13 +8,14 @@ import (
 	"tukarkultur/api/models"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 )
 
 type MeetupRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewMeetupRepository(db *sql.DB) *MeetupRepository {
+func NewMeetupRepository(db *sqlx.DB) *MeetupRepository {
 	return &MeetupRepository{db: db}
 }
 

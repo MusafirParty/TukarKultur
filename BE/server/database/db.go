@@ -1,14 +1,14 @@
 package database
 
 import (
-	"database/sql"
 	"log"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
-func NewConnection(databaseURL string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", databaseURL)
+func NewConnection(databaseURL string) (*sqlx.DB, error) {
+	db, err := sqlx.Connect("postgres", databaseURL)
 	if err != nil {
 		return nil, err
 	}

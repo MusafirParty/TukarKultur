@@ -8,13 +8,14 @@ import (
 	"tukarkultur/api/models"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 )
 
 type InteractionRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewInteractionRepository(db *sql.DB) *InteractionRepository {
+func NewInteractionRepository(db *sqlx.DB) *InteractionRepository {
 	return &InteractionRepository{db: db}
 }
 

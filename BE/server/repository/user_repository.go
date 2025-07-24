@@ -1,18 +1,18 @@
 package repository
 
 import (
-	"database/sql"
 	"time"
 	"tukarkultur/api/models"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 )
 
 type UserRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewUserRepository(db *sql.DB) *UserRepository {
+func NewUserRepository(db *sqlx.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 

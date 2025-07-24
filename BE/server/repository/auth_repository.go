@@ -1,19 +1,19 @@
 package repository
 
 import (
-	"database/sql"
 	"fmt"
 	"time"
 	"tukarkultur/api/models"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 )
 
 type AuthRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewAuthRepository(db *sql.DB) *AuthRepository {
+func NewAuthRepository(db *sqlx.DB) *AuthRepository {
 	return &AuthRepository{db: db}
 }
 

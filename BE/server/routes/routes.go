@@ -57,10 +57,18 @@ func SetupRoutes(
 		// Friend routes
 		friends := v1.Group("/friends")
 		{
-			friends.POST("", friendHandler.CreateFriend)
 			friends.GET("", friendHandler.GetAllFriends)
-			friends.GET("/user/:id", friendHandler.GetFriendsByUserID)
+			friends.POST("", friendHandler.CreateFriend)
 			friends.DELETE("", friendHandler.DeleteFriend)
+		}
+
+		// Friend request routes
+		friendRequests := v1.Group("/friend-requests")
+		{
+			friendRequests.POST("", friendHandler.SendFriendRequest)
+			friendRequests.PUT("/:id", friendHandler.RespondToFriendRequest)
+			friendRequests.GET("/received", friendHandler.GetReceivedFriendRequests)
+			friendRequests.GET("/sent", friendHandler.GetSentFriendRequests)
 		}
 
 		// Meetup routes
