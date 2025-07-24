@@ -45,6 +45,7 @@ func SetupRoutes(
 			users.GET("/:id", userHandler.GetUser)
 			users.PUT("/:id", userHandler.UpdateUser)
 			users.DELETE("/:id", userHandler.DeleteUser)
+			users.POST("/:id/profile-picture", userHandler.UploadProfilePicture)
 		}
 
 		// User routes
@@ -84,7 +85,7 @@ func SetupRoutes(
 			interactions.GET("/user/:id", interactionHandler.GetInteractionsByUserID)
 			interactions.GET("/reviews/:id", interactionHandler.GetReviewsForUser)
 			interactions.GET("/stats/:id", interactionHandler.GetUserRatingStats)
-			interactions.PUT("/:id", interactionHandler.UpdateInteraction)
+			interactions.PUT("/:id", interactionHandler.UpdateInteractionWithPhoto)
 			interactions.DELETE("/:id", interactionHandler.DeleteInteraction)
 		}
 

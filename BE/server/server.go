@@ -48,9 +48,10 @@ func main() {
 	// Initialize AI services
 	geminiService := services.NewGeminiService()
 	openaiService := services.NewOpenAIService()
+	cloudinaryService := services.NewCloudinaryService()
 
 	// Initialize handlers
-	userHandler := handlers.NewUserHandler(userRepo)
+	userHandler := handlers.NewUserHandler(userRepo, cloudinaryService)
 	friendHandler := handlers.NewFriendHandler(friendRepo)
 	meetupHandler := handlers.NewMeetupHandler(meetupRepo)
 	interactionHandler := handlers.NewInteractionHandler(interactionRepo, meetupRepo)
