@@ -6,7 +6,7 @@ import (
 	"tukarkultur/api/database"
 	"tukarkultur/api/handlers"
 	"tukarkultur/api/repository"
-	"tukarkultur/api/routes"
+	"tukark ultur/api/routes"
 	"tukarkultur/api/services"
 
 	"github.com/gin-gonic/gin"
@@ -39,6 +39,7 @@ func main() {
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
+	friendRepo := repository.NewFriendRepository(db)
 
 	// Initialize AI services
 	geminiService := services.NewGeminiService()
@@ -46,6 +47,7 @@ func main() {
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userRepo)
+	friendHandler := handlers.NewFriendHandler(friendRepo)
 	geminiHandler := handlers.NewGeminiHandler(geminiService)
 	openaiHandler := handlers.NewOpenAIHandler(openaiService)
 
@@ -67,7 +69,7 @@ func main() {
 	})
 
 	// Setup routes
-	routes.SetupRoutes(router, userHandler, geminiHandler, openaiHandler)
+	routes.SetupRoutes(router, userHandler, geminiHandler, openaiHandler, friendHandler)
 
 	// Start server
 	log.Printf("🚀 Server starting on port %s", port)
