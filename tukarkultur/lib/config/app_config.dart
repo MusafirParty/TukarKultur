@@ -1,7 +1,36 @@
+import 'dart:io';
+
 class AppConfig {
   // Backend API Configuration
-  static const String baseApiUrl = 'http://localhost:8080/api/v1';
-  static const String webSocketUrl = 'ws://localhost:8080/api/v1/chat';
+  // Dynamic URL based on platform
+  static String get baseApiUrl {
+    if (Platform.isAndroid) {
+      // For containerized environment, use the machine's IP
+      // If using standard Android emulator, change to 10.0.2.2
+      return 'http://172.24.2.221:3000/api/v1';
+    } else if (Platform.isIOS) {
+      // For iOS simulator, localhost works
+      return 'http://localhost:3000/api/v1';
+    } else {
+      // For desktop (Linux, Windows, macOS)
+      return 'http://localhost:3000/api/v1';
+    }
+  }
+  
+  static String get webSocketUrl {
+    if (Platform.isAndroid) {
+      return 'ws://172.24.2.221:3000/api/v1/chat';
+    } else if (Platform.isIOS) {
+      return 'ws://localhost:3000/api/v1/chat';
+    } else {
+      return 'ws://localhost:3000/api/v1/chat';
+    }
+  }
+  
+  // Alternative configurations:
+  // For standard Android emulator: use 10.0.2.2:3000
+  // For physical Android device: use your network IP (check with 'ip addr show')
+  // For different ports: update the port number accordingly
   
   // For production, update these URLs:
   // static const String baseApiUrl = 'https://your-api.com/api/v1';

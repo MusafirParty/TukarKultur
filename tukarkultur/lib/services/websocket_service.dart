@@ -6,7 +6,8 @@ import '../models/chat_models.dart';
 import '../config/app_config.dart';
 
 class WebSocketService {
-  static const String baseUrl = AppConfig.webSocketUrl;
+  // Get baseUrl dynamically at runtime
+  static String get baseUrl => AppConfig.webSocketUrl;
   
   WebSocketChannel? _channel;
   StreamController<ChatMessage>? _messageController;
