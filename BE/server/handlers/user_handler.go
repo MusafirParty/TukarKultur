@@ -106,6 +106,8 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	// Get existing user
 	user, err := h.userRepo.GetByID(id)
+
+	fmt.Print(user)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -146,6 +148,17 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	if country, exists := updateData["country"]; exists {
 		if str, ok := country.(string); ok {
 			user.Country = &str
+		}
+	}
+
+	if lat, exists := updateData["latitude"]; exists {
+		if f, ok := lat.(float64); ok {
+			user.Latitude = &f
+		}
+	}
+	if lng, exists := updateData["longitude"]; exists {
+		if f, ok := lng.(float64); ok {
+			user.Longitude = &f
 		}
 	}
 
