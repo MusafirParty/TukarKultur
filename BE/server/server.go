@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"tukarkultur/api/chat_socket"
 	"tukarkultur/api/database"
 	"tukarkultur/api/handlers"
 	"tukarkultur/api/repository"
@@ -72,11 +73,13 @@ func main() {
 		c.Next()
 	})
 
+	chat_socket.Run()
+
 	// Setup routes
 	routes.SetupRoutes(router, userHandler, geminiHandler, openaiHandler, friendHandler, meetupHandler, interactionHandler)
 
 	// Start server
-	log.Printf("🚀 Server starting on port %s", port)
-	log.Printf("📊 Health check: http://localhost:%s/api/v1/health", port)
+	log.Printf("Server starting on port %s", port)
+	log.Printf("Health check: http://localhost:%s/api/v1/health", port)
 	log.Fatal(router.Run(":" + port))
 }

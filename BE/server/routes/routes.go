@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"tukarkultur/api/chat_socket"
 	"tukarkultur/api/handlers"
 
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,12 @@ func SetupRoutes(
 			users.GET("/:id", userHandler.GetUser)
 			users.PUT("/:id", userHandler.UpdateUser)
 			users.DELETE("/:id", userHandler.DeleteUser)
+		}
+
+		// User routes
+		chat := v1.Group("/chat")
+		{
+			chat.GET("", chat_socket.HandleConnection)
 		}
 
 		// Friend routes
