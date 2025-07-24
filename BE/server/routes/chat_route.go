@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"tukarkultur/api/controllers"
+	"tukarkultur/api/handlers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,6 +9,6 @@ import (
 func RegisterUserRoutes(router *gin.Engine) {
 	websocketRoutes := router.Group("/ws")
 	{
-		websocketRoutes.GET("/", controllers.ConnectWebsocket)
+		websocketRoutes.GET("/", handlers.ConnectWebsocket)
 	}
 }

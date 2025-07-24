@@ -67,15 +67,14 @@ CREATE TABLE interactions (
     UNIQUE(meetup_id, reviewer_id)
 );
 
--- Belum
--- -- Simple chat messages (just for coordinating meetups)
--- CREATE TABLE messages (
---     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
---     connection_id UUID REFERENCES connections(id) ON DELETE CASCADE,
---     sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
---     message_text TEXT, -- null if message_type is 'image'
---     message_type VARCHAR(20) DEFAULT 'text', -- text, image, location, meetup_proposal
---     image_url TEXT, -- Cloudinary URL for images: https://res.cloudinary.com/your-cloud/image/upload/v1234567890/chat/msg_xyz789.jpg
---     cloudinary_public_id VARCHAR(255), -- For managing/deleting images: chat/msg_xyz789
---     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
--- );
+-- Simple chat messages (just for coordinating meetups)
+CREATE TABLE messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    connection_id UUID REFERENCES connections(id) ON DELETE CASCADE,
+    sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    message_text TEXT, -- null if message_type is 'image'
+    message_type VARCHAR(20) DEFAULT 'text', -- text, image, location, meetup_proposal
+    image_url TEXT, -- Cloudinary URL for images: https://res.cloudinary.com/your-cloud/image/upload/v1234567890/chat/msg_xyz789.jpg
+    cloudinary_public_id VARCHAR(255), -- For managing/deleting images: chat/msg_xyz789
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
