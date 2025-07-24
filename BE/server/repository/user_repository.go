@@ -16,16 +16,21 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(user *models.User) error {
+	// Generate UUID if not set
+	if user.ID == uuid.Nil {
+		user.ID = uuid.New()
+	}
+
 	query := `
-        INSERT INTO users (username, email, password_hash, full_name, profile_picture_url, bio, age, city, country, interests, latitude, longitude)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-        RETURNING id, created_at, updated_at, total_interactions, average_rating`
+        INSERT INTO users (id, username, email, password_hash, full_name, profile_picture_url, bio, age, city, country, interests, latitude, longitude)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        RETURNING created_at, updated_at, total_interactions, average_rating`
 
 	return r.db.QueryRow(query,
-		user.Username, user.Email, user.PasswordHash, user.FullName,
+		user.ID, user.Username, user.Email, user.PasswordHash, user.FullName,
 		user.ProfilePictureURL, user.Bio, user.Age, user.City, user.Country,
 		user.Interests, user.Latitude, user.Longitude,
-	).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt, &user.TotalInteractions, &user.AverageRating)
+	).Scan(&user.CreatedAt, &user.UpdatedAt, &user.TotalInteractions, &user.AverageRating)
 }
 
 func (r *UserRepository) GetByID(id uuid.UUID) (*models.User, error) {
