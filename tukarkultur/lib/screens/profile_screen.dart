@@ -1,15 +1,25 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(CupertinoIcons.arrow_left, color: Colors.black),
           onPressed: () {},
         ),
-        title: Text('Profile'),
+        title: Text(
+          'Profile',
+          style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+              height: 1.27),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
@@ -53,37 +63,31 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16),
-            
+
             // Name and Location
             Text(
               'Sophia Carter',
               style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  height: 1.27),
             ),
-            SizedBox(height: 4),
             Text(
               'San Francisco, CA',
               style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
+                  fontSize: 16, color: Color(0xFF9C854A), height: 1.5),
             ),
-            SizedBox(height: 4),
             Text(
               'Joined 2021',
               style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade500,
-              ),
+                  fontSize: 16, color: Color(0xFF9C854A), height: 1.5),
             ),
             SizedBox(height: 32),
-            
+
             // Stats Row
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildStatColumn('120', 'Interactions'),
                 _buildStatColumn('4.8', 'Avg. Rating'),
@@ -91,7 +95,7 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
             SizedBox(height: 40),
-            
+
             // Settings Section
             Align(
               alignment: Alignment.centerLeft,
@@ -105,7 +109,7 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16),
-            
+
             _buildSettingsItem(
               Icons.person_outline,
               'Edit Profile',
@@ -124,46 +128,6 @@ class ProfileScreen extends StatelessWidget {
               'Control your privacy settings',
             ),
             SizedBox(height: 16),
-            
-            // Save Interaction Summaries Button
-            Container(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFE6B800), // Golden yellow
-                  foregroundColor: Colors.black,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                ),
-                child: Text(
-                  'Save Interaction Summaries',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            
-            // Additional Options
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Additional Options',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            
             _buildSettingsItem(
               Icons.help_outline,
               'Help & Support',
@@ -189,30 +153,39 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildStatColumn(String value, String label) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Color(0xffe8e0cf), // Border color
+          width: 1.0, // Border width
         ),
-        SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
+        borderRadius: BorderRadius.circular(8), // Border radius
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                height: 1.25),
           ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+          SizedBox(height: 4),
+          Text(
+            label,
+            style:
+                TextStyle(fontSize: 14, color: Color(0xFF9C854A), height: 1.5),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSettingsItem(IconData icon, String title, String subtitle, {Color? textColor}) {
+  Widget _buildSettingsItem(IconData icon, String title, String subtitle,
+      {Color? textColor}) {
     return Row(
       children: [
         Icon(icon, color: textColor ?? Colors.black, size: 24),

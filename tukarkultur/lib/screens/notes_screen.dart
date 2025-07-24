@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class NotesScreen extends StatefulWidget {
@@ -12,11 +13,18 @@ class _NotesScreenState extends State<NotesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notes'),
+        title: Text(
+          'Notes',
+          style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+              height: 1.27),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.add, color: Colors.black),
+            icon: Icon(CupertinoIcons.add, color: Colors.black),
             onPressed: () {},
           ),
         ],
@@ -26,22 +34,22 @@ class _NotesScreenState extends State<NotesScreen> {
           // Search Bar
           Container(
             margin: EdgeInsets.all(20),
-            padding: EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(25),
+              color: Color(0xFFF2F0E8),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search notes',
                 border: InputBorder.none,
-                prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
-                hintStyle: TextStyle(color: Colors.grey.shade500),
+                prefixIcon: Icon(Icons.search, color: Color(0xFF9C854A)),
+                hintStyle: TextStyle(color: Color(0xFF9C854A)),
+                contentPadding: EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
-          
+
           // Notes List
           Expanded(
             child: ListView(

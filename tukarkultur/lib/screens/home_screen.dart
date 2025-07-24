@@ -6,7 +6,13 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text('Home',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                height: 1.27)),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(Icons.settings_outlined, color: Colors.black),
@@ -29,7 +35,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 32),
-            
+
             // Nearby Users Section
             Text(
               'Nearby Users',
@@ -40,30 +46,113 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildUserAvatar('Liam', 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
-                _buildUserAvatar('Olivia', 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
-                _buildUserAvatar('Noah', 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
-              ],
-            ),
-            SizedBox(height: 32),
-            
-            // User Rankings Section
-            Text(
-              'User Rankings',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
+
+            // Horizontal scrollable nearby users
+            SizedBox(
+              height: 110, // Fixed height for the horizontal scroll
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 8, // More users
+                itemBuilder: (context, index) {
+                  List<String> userNames = [
+                    'Liam',
+                    'Olivia',
+                    'Noah',
+                    'Emma',
+                    'William',
+                    'Ava',
+                    'James',
+                    'Isabella'
+                  ];
+                  return Padding(
+                    padding: EdgeInsets.only(right: 32),
+                    child: _buildUserAvatar(userNames[index],
+                        'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
+                  );
+                },
               ),
             ),
+
+            SizedBox(height: 32),
+
+            // User Rankings Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'User Rankings',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => RankingsScreen()),
+                    );
+                  },
+                  child: Text(
+                    'See All',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF9C854A),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             SizedBox(height: 16),
-            _buildRankingItem('You', '120 points', 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
-            _buildRankingItem('Ava', '150 points', 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
-            _buildRankingItem('Owen', '135 points', 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
-            _buildRankingItem('Chloe', '110 points', 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
+            _buildRankingItem('You', '120 points',
+                'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
+            _buildRankingItem('Ava', '150 points',
+                'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
+            _buildRankingItem('Owen', '135 points',
+                'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
+            _buildRankingItem('Chloe', '110 points',
+                'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
+
+            SizedBox(height: 32),
+
+            // Friends Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Friends',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    // Navigate to friends screen
+                  },
+                  child: Text(
+                    'See All',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF9C854A),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+            _buildRankingItem('Sarah', '',
+                'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
+            _buildRankingItem('Marcus', '',
+                'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
+            _buildRankingItem('Sofia', '',
+                'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
+            _buildRankingItem('Alex', '',
+                'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%20from%202025-07-24%2016-42-14-4H6yDPRO72m4pG2CnzVgGbkLqhstEr.png'),
           ],
         ),
       ),

@@ -16,11 +16,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.orange,
-        scaffoldBackgroundColor: Color(0xFFF5F3F0), // Cream background
-        fontFamily: 'SF Pro Display',
+        scaffoldBackgroundColor: Color(0xFFFCFAF7), // Cream background
+        fontFamily: 'Manrope',
         appBarTheme: AppBarTheme(
           elevation: 0,
-          backgroundColor: Color(0xFFF5F3F0),
+          backgroundColor: Color(0xFFFCFAF7),
           foregroundColor: Colors.black,
           titleTextStyle: TextStyle(
             fontSize: 18,
@@ -87,7 +87,7 @@ class _MainNavigationState extends State<MainNavigation> {
           children: [
             Icon(
               isSelected ? filledIcon : outlinedIcon,
-              color: isSelected ? Colors.black : Colors.grey.shade600,
+              color: isSelected ? Colors.black : Color(0xFF9C854A),
               size: 24,
             ),
             SizedBox(height: 4),
@@ -95,8 +95,9 @@ class _MainNavigationState extends State<MainNavigation> {
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: isSelected ? Colors.black : Colors.grey.shade600,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected ? Colors.black : Color(0xFF9C854A),
+                fontWeight: FontWeight.w500,
+                height: 1.5
               ),
             ),
           ],
