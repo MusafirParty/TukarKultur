@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"tukarkultur/api/models"
@@ -19,17 +21,88 @@ type InteractionHandler struct {
 
 func NewInteractionHandler(interactionRepo *repository.InteractionRepository, meetupRepo *repository.MeetupRepository) *InteractionHandler {
 	return &InteractionHandler{
-		interactionRepo:   interactionRepo,
-		meetupRepo:        meetupRepo,
-		cloudinaryService: services.NewCloudinaryService(),
+		interactionRepo: interactionRepo,
+		meetupRepo:      meetupRepo,
 	}
+}
+
+// POST /interactions
+func (h *InteractionHandler) CreateInteraction(c *gin.Context) {
+	var req models.CreateInteractionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("Error binding JSON for create interaction: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	log.Printf("Received create interaction request: %+v", req)
+
+	// Validate that reviewer and reviewed user are different
+	if req.ReviewerID == req.ReviewedUserID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot review yourself"})
+		return
+	}
+
+	// Check if meetup exists and is completed
+	meetup, err := h.meetupRepo.GetByID(req.MeetupID)
+	if err != nil {
+		log.Printf("Error getting meetup: %v", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Meetup not found"})
+		return
+	}
+
+	log.Printf("Meetup found - ID: %s, Status: '%s'", meetup.ID, meetup.Status)
+
+	if meetup.Status != "completed" {
+		log.Printf("Meetup status is '%s', expected 'completed'", meetup.Status)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":          "Can only review completed meetups",
+			"current_status": meetup.Status,
+		})
+		return
+	}
+
+	// Check if interaction already exists for this meetup and reviewer
+	exists, err := h.interactionRepo.ExistsForMeetupAndReviewer(req.MeetupID, req.ReviewerID)
+	if err != nil {
+		log.Printf("Error checking if interaction exists: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to check interaction status: ", err)})
+		return
+	}
+
+	if exists {
+		c.JSON(http.StatusConflict, gin.H{"error": "You have already reviewed this meetup"})
+		return
+	}
+
+	interaction := &models.Interaction{
+		MeetupID:            req.MeetupID,
+		ReviewerID:          req.ReviewerID,
+		ReviewedUserID:      req.ReviewedUserID,
+		Rating:              req.Rating,
+		MeetupPhotoURL:      req.MeetupPhotoURL,
+		MeetupPhotoPublicID: req.MeetupPhotoPublicID,
+		ReviewText:          req.ReviewText,
+	}
+
+	if err := h.interactionRepo.Create(interaction); err != nil {
+		log.Printf("Error creating interaction in handler: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to create interaction",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	log.Printf("Successfully created interaction: %+v", interaction)
+	c.JSON(http.StatusCreated, gin.H{"interaction": interaction})
 }
 
 // GET /interactions
 func (h *InteractionHandler) GetAllInteractions(c *gin.Context) {
 	interactions, err := h.interactionRepo.GetAll()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve interactions"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to retrieve interactions: ", err)})
 		return
 	}
 

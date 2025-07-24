@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import 'login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -111,36 +114,42 @@ class ProfileScreen extends StatelessWidget {
             SizedBox(height: 16),
 
             _buildSettingsItem(
+              context,
               Icons.person_outline,
               'Edit Profile',
               'Edit your name, bio, and preferences',
             ),
             SizedBox(height: 16),
             _buildSettingsItem(
+              context,
               Icons.notifications_outlined,
               'Notifications',
               'Manage your notification settings',
             ),
             SizedBox(height: 16),
             _buildSettingsItem(
+              context,
               Icons.security_outlined,
               'Privacy & Security',
               'Control your privacy settings',
             ),
             SizedBox(height: 16),
             _buildSettingsItem(
+              context,
               Icons.help_outline,
               'Help & Support',
               'Get help and contact support',
             ),
             SizedBox(height: 16),
             _buildSettingsItem(
+              context,
               Icons.info_outline,
               'About',
               'App version and information',
             ),
             SizedBox(height: 16),
             _buildSettingsItem(
+              context,
               Icons.logout_outlined,
               'Sign Out',
               'Sign out of your account',
@@ -184,40 +193,51 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsItem(IconData icon, String title, String subtitle,
+  Widget _buildSettingsItem(BuildContext context, IconData icon, String title, String subtitle,
       {Color? textColor}) {
-    return Row(
-      children: [
-        Icon(icon, color: textColor ?? Colors.black, size: 24),
-        SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: textColor ?? Colors.black,
+    return GestureDetector(
+      onTap: () {
+        if (title == 'Sign Out') {
+          _showSignOutDialog(context);
+        } else if (title == 'About') {
+          _showAboutDialog(context);
+        } else {
+          _showFeatureDialog(context, title);
+        }
+      },
+      child: Row(
+        children: [
+          Icon(icon, color: textColor ?? Colors.black, size: 24),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: textColor ?? Colors.black,
+                  ),
                 ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
+                SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        Icon(
-          Icons.chevron_right,
-          color: Colors.grey.shade400,
-        ),
-      ],
+          Icon(
+            Icons.chevron_right,
+            color: Colors.grey.shade400,
+          ),
+        ],
+      ),
     );
   }
 
@@ -241,14 +261,16 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('About Community App'),
+        title: Text('About TukarKultur'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Version: 1.0.0'),
             SizedBox(height: 8),
-            Text('A platform for cultural exchange and community building.'),
+            Text('Connect through Culture - A platform for cultural exchange, meaningful conversations, and building global friendships.'),
+            SizedBox(height: 8),
+            Text('Discover new cultures, share your own, and create lasting connections with people around the world.'),
           ],
         ),
         actions: [
@@ -273,11 +295,42 @@ class ProfileScreen extends StatelessWidget {
             child: Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Signed out successfully')),
+              
+              // Show loading
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => Center(
+                  child: CircularProgressIndicator(),
+                ),
               );
+              
+              try {
+                // Perform logout
+                await Provider.of<AuthProvider>(context, listen: false).logout();
+                
+                // Close loading dialog
+                Navigator.pop(context);
+                
+                // Navigate to login screen
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                  (route) => false,
+                );
+              } catch (e) {
+                // Close loading dialog
+                Navigator.pop(context);
+                
+                // Show error
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Logout failed: ${e.toString()}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             child: Text('Sign Out', style: TextStyle(color: Colors.red)),
           ),

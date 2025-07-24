@@ -1068,17 +1068,3 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"password123"}'
-
-1. Profile Picture Upload
-Endpoint: POST /api/v1/users/:id/profile-picture
-Method: Multipart form-data upload
-Field: profile_picture (file)
-Storage: Cloudinary profiles folder
-Database: Updates profile_picture_url in users table
-2. Meetup Photo Upload (Interactions)
-Create with Photo: POST /api/v1/interactions
-Update with Photo: PUT /api/v1/interactions/:id
-Method: Multipart form-data upload
-Field: meetup_photo (file)
-Storage: Cloudinary meetups folder
-Database: Updates meetup_photo_url and meetup_photo_public_id in interactions table

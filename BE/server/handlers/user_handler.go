@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"tukarkultur/api/models"
 	"tukarkultur/api/repository"
@@ -54,7 +55,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	}
 
 	if err := h.userRepo.Create(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to create user: ", err)})
 		return
 	}
 
@@ -87,7 +88,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 func (h *UserHandler) GetAllUsers(c *gin.Context) {
 	users, err := h.userRepo.GetAll()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to fetch users: ", err)})
 		return
 	}
 
@@ -110,6 +111,8 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	// Get existing user
 	user, err := h.userRepo.GetByID(id)
+
+	fmt.Print(user)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -153,8 +156,19 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		}
 	}
 
+	if lat, exists := updateData["latitude"]; exists {
+		if f, ok := lat.(float64); ok {
+			user.Latitude = &f
+		}
+	}
+	if lng, exists := updateData["longitude"]; exists {
+		if f, ok := lng.(float64); ok {
+			user.Longitude = &f
+		}
+	}
+
 	if err := h.userRepo.Update(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to update user: ", err)})
 		return
 	}
 
@@ -213,7 +227,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	}
 
 	if err := h.userRepo.Delete(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to delete user: ", err)})
 		return
 	}
 
