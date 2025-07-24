@@ -55,7 +55,7 @@ CREATE TABLE interactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     meetup_id UUID REFERENCES meetups(id) ON DELETE CASCADE,
     reviewer_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    reviewed_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        reviewed_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     rating INT CHECK (rating >= 1 AND rating <= 5),
     
     -- Post-meetup photo together
