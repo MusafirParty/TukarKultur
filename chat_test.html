@@ -1,48 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>1-on-1 WebSocket Chat</title>
+  <meta charset="utf-8" />
+  <title>Go Chat Socket Test</title>
   <style>
     body { font-family: Arial, sans-serif; }
     #chat {
       border: 1px solid #ccc;
+      padding: 5px;
       height: 300px;
       overflow-y: auto;
-      padding: 5px;
       margin-bottom: 10px;
     }
-    #chat div { margin: 2px 0; }
+    #chat div { margin: 3px 0; }
   </style>
 </head>
 <body>
-  <h1>Direct Chat Test</h1>
-
-  <label>Your Name: <input type="text" id="from" value="alice"></label><br>
-  <label>Send To: <input type="text" id="to" value="bob"></label><br><br>
-
+  <h1>Chat Socket Test</h1>
+  <label>Your ID: <input type="text" id="myID" value="alice"></label><br>
+  <label>Receiver ID: <input type="text" id="receiver" value="bob"></label><br><br>
   <button onclick="connect()">Connect</button>
+
   <div id="chat"></div>
 
-  <input type="text" id="message" placeholder="Type your message..." style="width:70%;">
+  <input type="text" id="message" placeholder="Enter message" style="width: 70%;">
   <button onclick="sendMessage()">Send</button>
 
   <script>
     let ws;
 
-    function connect() {
-      const from = document.getElementById("from").value;
-      const to = document.getElementById("to").value;
+    function logMessage(msg) {
+      const chatBox = document.getElementById("chat");
+      const div = document.createElement("div");
+      div.textContent = msg;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
 
-      ws = new WebSocket(`ws://localhost:8080/api/v1/chat?From=${from}&To=${to}`);
+    function connect() {
+      const myID = document.getElementById("myID").value;
+      ws = new WebSocket(`ws://localhost:8080/api/v1/chat?id=${myID}`);
 
       ws.onopen = () => {
-        logMessage(`Connected as ${from}, chatting with ${to}`);
+        logMessage("Connected as " + myID);
       };
 
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
-        logMessage(`${msg.from}: ${msg.text}`);
+        logMessage(`${msg.sender} -> You: ${msg.text}`);
       };
 
       ws.onclose = () => {
@@ -52,18 +57,19 @@
 
     function sendMessage() {
       const text = document.getElementById("message").value;
-      const payload = {
-        text: text
-      };
-      ws.send(JSON.stringify(payload));
-      document.getElementById("message").value = "";
-    }
+      const receiver = document.getElementById("receiver").value;
+      const myID = document.getElementById("myID").value;
 
-    function logMessage(message) {
-      const div = document.createElement("div");
-      div.textContent = message;
-      document.getElementById("chat").appendChild(div);
-      document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
+      const payload = {
+        sender: myID,
+        receiver: receiver,
+        text: text,
+        image_url: ""
+      };
+
+      ws.send(JSON.stringify(payload));
+      logMessage(`You -> ${receiver}: ${text}`);
+      document.getElementById("message").value = "";
     }
   </script>
 </body>
