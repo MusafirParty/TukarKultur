@@ -7,6 +7,7 @@ import (
 	"tukarkultur/api/handlers"
 	"tukarkultur/api/repository"
 	"tukarkultur/api/routes"
+	"tukarkultur/api/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -39,8 +40,14 @@ func main() {
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
 
+	// Initialize AI services
+	geminiService := services.NewGeminiService()
+	openaiService := services.NewOpenAIService()
+
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userRepo)
+	geminiHandler := handlers.NewGeminiHandler(geminiService)
+	openaiHandler := handlers.NewOpenAIHandler(openaiService)
 
 	// Setup Gin router
 	router := gin.Default()
@@ -60,7 +67,7 @@ func main() {
 	})
 
 	// Setup routes
-	routes.SetupRoutes(router, userHandler)
+	routes.SetupRoutes(router, userHandler, geminiHandler, openaiHandler)
 
 	// Start server
 	log.Printf("🚀 Server starting on port %s", port)
