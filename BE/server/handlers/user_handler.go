@@ -19,6 +19,7 @@ func NewUserHandler(userRepo *repository.UserRepository) *UserHandler {
 }
 
 // POST /users
+// POST /users
 func (h *UserHandler) CreateUser(c *gin.Context) {
 	var req models.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -34,6 +35,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	}
 
 	user := &models.User{
+		ID:           uuid.New(), // Generate UUID here
 		Username:     req.Username,
 		Email:        req.Email,
 		PasswordHash: string(hashedPassword),
@@ -43,6 +45,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		City:         req.City,
 		Country:      req.Country,
 		Interests:    req.Interests,
+		// Latitude and Longitude will be nil by default, which is fine
 	}
 
 	if err := h.userRepo.Create(user); err != nil {
