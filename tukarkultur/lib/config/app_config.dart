@@ -27,18 +27,9 @@ class AppConfig {
     }
   }
   
-  // Alternative configurations:
-  // For standard Android emulator: use 10.0.2.2:3000
-  // For physical Android device: use your network IP (check with 'ip addr show')
-  // For different ports: update the port number accordingly
-  
-  // For production, update these URLs:
-  // static const String baseApiUrl = 'https://your-api.com/api/v1';
-  // static const String webSocketUrl = 'wss://your-api.com/api/v1/chat';
-  
-  // AI Configuration
+  // AI Configuration - CHANGED TO OPENAI
   static const bool enableAI = true;
-  static const String defaultAIProvider = 'gemini'; // 'gemini' or 'openai'
+  static const String defaultAIProvider = 'openai'; // Changed from 'gemini' to 'openai'
   
   // Chat Configuration
   static const int messageTimeout = 30; // seconds

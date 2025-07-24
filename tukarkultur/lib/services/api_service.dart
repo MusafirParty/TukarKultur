@@ -76,21 +76,22 @@ class ApiService {
   Future<AIResponse?> generateWithOpenAI(AIRequest request) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/openai/generate'),
-        headers: _headers,
+        Uri.parse('${AppConfig.baseApiUrl}/openai/generate'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: jsonEncode(request.toJson()),
       );
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        if (jsonData['success'] == true && jsonData['data'] != null) {
-          return AIResponse.fromJson(jsonData['data']);
-        }
+        return AIResponse.fromJson(jsonData);
+      } else {
+        print('OpenAI API error: ${response.statusCode} - ${response.body}');
+        return null;
       }
-      print('OpenAI API error: ${response.statusCode} - ${response.body}');
-      return null;
     } catch (e) {
-      print('OpenAI API request failed: $e');
+      print('OpenAI generation error: $e');
       return null;
     }
   }
