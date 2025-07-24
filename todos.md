@@ -8,6 +8,3 @@ feat: must have
 feat: should have 
 - culture / place recommendation []
 - backend integration to actual function []
-
-
-
