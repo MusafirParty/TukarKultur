@@ -187,7 +187,7 @@ class ApiService {
 
   // AUTHENTICATION METHODS
 
-  // User registration
+    // User registration
   Future<AuthResponse?> register(RegisterRequest request) async {
     try {
       final response = await http.post(
@@ -198,8 +198,9 @@ class ApiService {
 
       if (response.statusCode == 201) {
         final jsonData = jsonDecode(response.body);
-        if (jsonData['success'] == true && jsonData['data'] != null) {
-          final authResponse = AuthResponse.fromJson(jsonData['data']);
+        // Backend returns: {"token": "...", "user": {...}, "message": "..."}
+        if (jsonData['token'] != null && jsonData['user'] != null) {
+          final authResponse = AuthResponse.fromJson(jsonData);
           setAuthToken(authResponse.token);
           return authResponse;
         }
@@ -230,8 +231,9 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        if (jsonData['success'] == true && jsonData['data'] != null) {
-          final authResponse = AuthResponse.fromJson(jsonData['data']);
+        // Backend returns: {"token": "...", "user": {...}, "message": "..."}
+        if (jsonData['token'] != null && jsonData['user'] != null) {
+          final authResponse = AuthResponse.fromJson(jsonData);
           setAuthToken(authResponse.token);
           return authResponse;
         }
