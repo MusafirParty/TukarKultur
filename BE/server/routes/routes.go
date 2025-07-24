@@ -17,7 +17,7 @@ func SetupRoutes(router *gin.Engine, userHandler *handlers.UserHandler) {
 	})
 
 	// API v1 routes
-	v1 := router.Group("/api/v1")
+	v1 := router.Group("/api")
 	{
 		// User routes
 		users := v1.Group("/users")
@@ -27,6 +27,12 @@ func SetupRoutes(router *gin.Engine, userHandler *handlers.UserHandler) {
 			users.GET("/:id", userHandler.GetUser)
 			users.PUT("/:id", userHandler.UpdateUser)
 			users.DELETE("/:id", userHandler.DeleteUser)
+		}
+
+		// User routes
+		chat := v1.Group("/chat")
+		{
+			chat.GET("", handlers.CreateRoom)
 		}
 	}
 }
