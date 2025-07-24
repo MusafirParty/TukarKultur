@@ -4,16 +4,19 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"tukarkultur/api/models"
 	"tukarkultur/api/repository"
+	"tukarkultur/api/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type InteractionHandler struct {
-	interactionRepo *repository.InteractionRepository
-	meetupRepo      *repository.MeetupRepository
+	interactionRepo   *repository.InteractionRepository
+	meetupRepo        *repository.MeetupRepository
+	cloudinaryService *services.CloudinaryService
 }
 
 func NewInteractionHandler(interactionRepo *repository.InteractionRepository, meetupRepo *repository.MeetupRepository) *InteractionHandler {
@@ -200,8 +203,80 @@ func (h *InteractionHandler) GetUserRatingStats(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"stats": stats})
 }
 
-// PUT /interactions/:id
-func (h *InteractionHandler) UpdateInteraction(c *gin.Context) {
+func (h *InteractionHandler) CreateInteraction(c *gin.Context) {
+	// Parse form data
+	meetupIDStr := c.PostForm("meetup_id")
+	reviewerIDStr := c.PostForm("reviewer_id")
+	reviewedUserIDStr := c.PostForm("reviewed_user_id")
+	ratingStr := c.PostForm("rating")
+	reviewText := c.PostForm("review_text")
+
+	// Validate required fields
+	if meetupIDStr == "" || reviewerIDStr == "" || reviewedUserIDStr == "" || ratingStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing required fields"})
+		return
+	}
+
+	// Convert and validate form data
+	meetupID, err := uuid.Parse(meetupIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid meetup ID"})
+		return
+	}
+
+	reviewerID, err := uuid.Parse(reviewerIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid reviewer ID"})
+		return
+	}
+
+	reviewedUserID, err := uuid.Parse(reviewedUserIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid reviewed user ID"})
+		return
+	}
+
+	rating, err := strconv.Atoi(ratingStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid rating"})
+		return
+	}
+
+	interaction := &models.Interaction{
+		ID:             uuid.New(),
+		MeetupID:       meetupID,
+		ReviewerID:     reviewerID,
+		ReviewedUserID: reviewedUserID,
+		Rating:         rating,
+	}
+
+	if reviewText != "" {
+		interaction.ReviewText = &reviewText
+	}
+
+	// Handle file upload if present
+	file, _, err := c.Request.FormFile("meetup_photo")
+	if err == nil {
+		defer file.Close()
+
+		result, err := h.cloudinaryService.UploadImage(file, "meetups")
+		if err == nil {
+			interaction.MeetupPhotoURL = &result.SecureURL
+			interaction.MeetupPhotoPublicID = &result.PublicID
+		}
+	}
+
+	// Save interaction
+	if err := h.interactionRepo.Create(interaction); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create interaction"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"interaction": interaction})
+}
+
+// Add method to update interaction with file upload
+func (h *InteractionHandler) UpdateInteractionWithPhoto(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -220,24 +295,35 @@ func (h *InteractionHandler) UpdateInteraction(c *gin.Context) {
 		return
 	}
 
-	var req models.UpdateInteractionRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	// Parse form data
+	ratingStr := c.PostForm("rating")
+	reviewText := c.PostForm("review_text")
+
+	// Update rating if provided
+	if ratingStr != "" {
+		rating, err := strconv.Atoi(ratingStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid rating"})
+			return
+		}
+		existingInteraction.Rating = rating
 	}
 
-	// Update only provided fields
-	if req.Rating != nil {
-		existingInteraction.Rating = *req.Rating
+	// Update review text if provided
+	if reviewText != "" {
+		existingInteraction.ReviewText = &reviewText
 	}
-	if req.MeetupPhotoURL != nil {
-		existingInteraction.MeetupPhotoURL = req.MeetupPhotoURL
-	}
-	if req.MeetupPhotoPublicID != nil {
-		existingInteraction.MeetupPhotoPublicID = req.MeetupPhotoPublicID
-	}
-	if req.ReviewText != nil {
-		existingInteraction.ReviewText = req.ReviewText
+
+	// Handle file upload if present
+	file, _, err := c.Request.FormFile("meetup_photo")
+	if err == nil {
+		defer file.Close()
+
+		result, err := h.cloudinaryService.UploadImage(file, "meetups")
+		if err == nil {
+			existingInteraction.MeetupPhotoURL = &result.SecureURL
+			existingInteraction.MeetupPhotoPublicID = &result.PublicID
+		}
 	}
 
 	if err := h.interactionRepo.Update(existingInteraction); err != nil {

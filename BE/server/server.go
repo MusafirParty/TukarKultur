@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"tukarkultur/api/chat_socket"
+	"tukarkultur/api/chat_socket"
 	"tukarkultur/api/database"
 	"tukarkultur/api/handlers"
 	"tukarkultur/api/repository"
@@ -44,16 +45,21 @@ func main() {
 	meetupRepo := repository.NewMeetupRepository(db)
 	interactionRepo := repository.NewInteractionRepository(db)
 	authRepo := repository.NewAuthRepository(db)
+	authRepo := repository.NewAuthRepository(db)
 
 	// Initialize AI services
 	geminiService := services.NewGeminiService()
 	openaiService := services.NewOpenAIService()
+	cloudinaryService := services.NewCloudinaryService()
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userRepo)
 	friendHandler := handlers.NewFriendHandler(friendRepo)
 	meetupHandler := handlers.NewMeetupHandler(meetupRepo)
 	interactionHandler := handlers.NewInteractionHandler(interactionRepo, meetupRepo)
+	geminiHandler := handlers.NewGeminiHandler(geminiService)
+	openaiHandler := handlers.NewOpenAIHandler(openaiService)
+	authHandler := handlers.NewAuthHandler(authRepo)
 	geminiHandler := handlers.NewGeminiHandler(geminiService)
 	openaiHandler := handlers.NewOpenAIHandler(openaiService)
 	authHandler := handlers.NewAuthHandler(authRepo)
@@ -77,10 +83,15 @@ func main() {
 
 	chat_socket.Run()
 
+	chat_socket.Run()
+
 	// Setup routes
+	routes.SetupRoutes(router, userHandler, geminiHandler, openaiHandler, friendHandler, meetupHandler, interactionHandler, authHandler)
 	routes.SetupRoutes(router, userHandler, geminiHandler, openaiHandler, friendHandler, meetupHandler, interactionHandler, authHandler)
 
 	// Start server
+	log.Printf("Server starting on port %s", port)
+	log.Printf("Health check: http://localhost:%s/api/v1/health", port)
 	log.Printf("Server starting on port %s", port)
 	log.Printf("Health check: http://localhost:%s/api/v1/health", port)
 	log.Fatal(router.Run(":" + port))

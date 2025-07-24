@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"tukarkultur/api/models"
 	"tukarkultur/api/repository"
+	"tukarkultur/api/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -12,11 +13,15 @@ import (
 )
 
 type UserHandler struct {
-	userRepo *repository.UserRepository
+	userRepo          *repository.UserRepository
+	cloudinaryService *services.CloudinaryService
 }
 
-func NewUserHandler(userRepo *repository.UserRepository) *UserHandler {
-	return &UserHandler{userRepo: userRepo}
+func NewUserHandler(userRepo *repository.UserRepository, cloudinaryService *services.CloudinaryService) *UserHandler {
+	return &UserHandler{
+		userRepo:          userRepo,
+		cloudinaryService: cloudinaryService,
+	}
 }
 
 // POST /users
@@ -169,6 +174,47 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	user.PasswordHash = ""
 	c.JSON(http.StatusOK, gin.H{"user": user})
+}
+
+func (h *UserHandler) UploadProfilePicture(c *gin.Context) {
+	userID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	file, _, err := c.Request.FormFile("profile_picture")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+		return
+	}
+	defer file.Close()
+
+	// Upload to Cloudinary
+	result, err := h.cloudinaryService.UploadImage(file, "profiles")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload image"})
+		return
+	}
+
+	// Update user profile picture URL
+	user, err := h.userRepo.GetByID(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	user.ProfilePictureURL = &result.SecureURL
+	err = h.userRepo.Update(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":             "Profile picture updated successfully",
+		"profile_picture_url": result.SecureURL,
+	})
 }
 
 // DELETE /users/:id
