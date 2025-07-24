@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"tukarkultur/api/models"
@@ -62,7 +63,7 @@ func (h *InteractionHandler) CreateInteraction(c *gin.Context) {
 	exists, err := h.interactionRepo.ExistsForMeetupAndReviewer(req.MeetupID, req.ReviewerID)
 	if err != nil {
 		log.Printf("Error checking if interaction exists: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check interaction status"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to check interaction status: ", err)})
 		return
 	}
 
@@ -98,7 +99,7 @@ func (h *InteractionHandler) CreateInteraction(c *gin.Context) {
 func (h *InteractionHandler) GetAllInteractions(c *gin.Context) {
 	interactions, err := h.interactionRepo.GetAll()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve interactions"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to retrieve interactions: ", err)})
 		return
 	}
 

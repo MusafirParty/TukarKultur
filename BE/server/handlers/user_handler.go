@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"tukarkultur/api/models"
 	"tukarkultur/api/repository"
@@ -49,7 +50,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	}
 
 	if err := h.userRepo.Create(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to create user: ", err)})
 		return
 	}
 
@@ -82,7 +83,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 func (h *UserHandler) GetAllUsers(c *gin.Context) {
 	users, err := h.userRepo.GetAll()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to fetch users: ", err)})
 		return
 	}
 
@@ -149,7 +150,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	}
 
 	if err := h.userRepo.Update(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to update user: ", err)})
 		return
 	}
 
@@ -167,7 +168,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	}
 
 	if err := h.userRepo.Delete(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprint("Failed to delete user: ", err)})
 		return
 	}
 
