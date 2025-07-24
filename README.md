@@ -1,617 +1,1070 @@
-# TukarKultur Backend API
+# TukarKultur
 
-A comprehensive backend system for a cultural exchange and meetup application built with Go, Gin framework, PostgreSQL, and integrated AI services.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Technologies](#technologies)
-- [Getting Started](#getting-started)
-- [Database Schema](#database-schema)
-- [API Endpoints](#api-endpoints)
-- [Authentication](#authentication)
-- [WebSocket Chat](#websocket-chat)
-- [AI Integration](#ai-integration)
-- [Environment Variables](#environment-variables)
-- [Testing](#testing)
-- [Deployment](#deployment)
+# TukarKultur API Documentation
 
 ## Overview
 
-TukarKultur is a location-based cultural exchange platform that allows users to:
-- Connect with people from different cultural backgrounds
-- Organize and participate in cultural meetups
-- Share experiences through ratings and reviews
-- Chat in real-time to coordinate meetings
-- Get AI-powered cultural insights and recommendations
+TukarKultur is a cultural exchange platform with a comprehensive REST API built with Go and Gin framework. The API provides endpoints for user management, cultural meetups, AI-powered assistance, chat functionality, and file uploads.
 
-## Architecture
-
-The backend follows a clean, layered architecture:
-
-```
-BE/server/
-├── main.go                 # Application entry point
-├── database/              # Database connection
-├── models/                # Data structures and DTOs
-├── repository/            # Data access layer
-├── handlers/              # HTTP request handlers
-├── routes/                # Route definitions
-├── services/              # Business logic and AI services
-└── chat_socket/           # WebSocket implementation
-```
-
-### Components:
-
-- **Models**: Define data structures for all entities (User, Meetup, Friend, etc.)
-- **Repository**: Handle database operations with clean interfaces
-- **Handlers**: Process HTTP requests and responses
-- **Services**: Implement business logic and external API integrations
-- **Routes**: Define API endpoints and middleware
-
-## Technologies
-
-- **Framework**: Go with Gin HTTP web framework
-- **Database**: PostgreSQL with SQL driver
-- **Authentication**: JWT-like token-based authentication
-- **WebSocket**: Real-time chat using Gorilla WebSocket
-- **AI Integration**: Gemini AI and OpenAI APIs
-- **Password Hashing**: bcrypt
-- **CORS**: Cross-origin resource sharing enabled
-
-## Getting Started
-
-### Prerequisites
-
-- Go 1.19+ installed
-- PostgreSQL database
-- Environment variables configured
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd TukarKultur/BE/server
-```
-
-2. Install dependencies:
-```bash
-go mod tidy
-```
-
-3. Set up environment variables (create `.env` file):
-```bash
-DATABASE_URL=postgresql://username:password@localhost/tukarkultur_db
-PORT=8080
-GEMINI_API_KEY=your_gemini_api_key
-OPENAI_API_KEY=your_openai_api_key
-```
-
-4. Run database migrations:
-```bash
-psql -d tukarkultur_db -f ../schema.sql
-```
-
-5. Start the server:
-```bash
-go run server.go
-```
-
-The server will start on `http://localhost:8080`
-
-### Health Check
-
-Test if the server is running:
-```bash
-curl http://localhost:8080/api/v1/health
-```
-
-## Database Schema
-
-### Core Tables
-
-#### Users
-Stores user profiles and location data:
-```sql
-CREATE TABLE users (
-    id UUID PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    full_name VARCHAR(150) NOT NULL,
-    profile_picture_url TEXT,
-    bio TEXT,
-    age INT,
-    city VARCHAR(100),
-    country VARCHAR(100),
-    interests TEXT[],
-    latitude DECIMAL(10, 8),
-    longitude DECIMAL(11, 8),
-    location_updated_at TIMESTAMP WITH TIME ZONE,
-    total_interactions INT DEFAULT 0,
-    average_rating DECIMAL(3,2) DEFAULT 0.00,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### Friends
-Manages user connections:
-```sql
-CREATE TABLE friends (
-    user_id_1 UUID REFERENCES users(id),
-    user_id_2 UUID REFERENCES users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY(user_id_1, user_id_2)
-);
-```
-
-#### Meetups
-Stores meetup proposals and details:
-```sql
-CREATE TABLE meetups (
-    id UUID PRIMARY KEY,
-    proposed_by UUID REFERENCES users(id),
-    proposed_to UUID REFERENCES users(id),
-    location_name VARCHAR(255),
-    location_address TEXT,
-    meetup_time TIMESTAMP WITH TIME ZONE,
-    status VARCHAR(20) DEFAULT 'proposed',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### Interactions
-Post-meetup reviews and ratings:
-```sql
-CREATE TABLE interactions (
-    id UUID PRIMARY KEY,
-    meetup_id UUID REFERENCES meetups(id),
-    reviewer_id UUID REFERENCES users(id),
-    reviewed_user_id UUID REFERENCES users(id),
-    rating INT CHECK (rating >= 1 AND rating <= 5),
-    meetup_photo_url TEXT,
-    meetup_photo_public_id VARCHAR(255),
-    review_text TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### Auth Sessions
-Manages user authentication tokens:
-```sql
-CREATE TABLE auth_sessions (
-    id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES users(id),
-    token VARCHAR(255) UNIQUE NOT NULL,
-    expires_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-## API Endpoints
-
-### Base URL: `/api/v1`
-
-### Authentication Endpoints
-
-#### Register User
-```http
-POST /api/v1/auth/register
-Content-Type: application/json
-
-{
-  "username": "johndoe",
-  "email": "john@example.com",
-  "password": "password123",
-  "full_name": "John Doe",
-  "bio": "Love exploring different cultures",
-  "age": 25,
-  "city": "Jakarta",
-  "country": "Indonesia",
-  "interests": ["food", "music", "history"]
-}
-```
-
-#### Login
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
-
-#### Logout
-```http
-POST /api/v1/auth/logout
-Authorization: Bearer <token>
-```
-
-### User Management
-
-#### Get All Users
-```http
-GET /api/v1/users
-```
-
-#### Get User by ID
-```http
-GET /api/v1/users/{id}
-```
-
-#### Update User
-```http
-PUT /api/v1/users/{id}
-Content-Type: application/json
-
-{
-  "bio": "Updated bio",
-  "city": "Bandung",
-  "interests": ["art", "music"]
-}
-```
-
-#### Delete User
-```http
-DELETE /api/v1/users/{id}
-```
-
-### Friend Management
-
-#### Add Friend
-```http
-POST /api/v1/friends
-Content-Type: application/json
-
-{
-  "user_id_1": "uuid1",
-  "user_id_2": "uuid2"
-}
-```
-
-#### Get User's Friends
-```http
-GET /api/v1/friends/user/{id}?include_details=true
-```
-
-#### Remove Friend
-```http
-DELETE /api/v1/friends
-Content-Type: application/json
-
-{
-  "user_id_1": "uuid1",
-  "user_id_2": "uuid2"
-}
-```
-
-### Meetup Management
-
-#### Create Meetup
-```http
-POST /api/v1/meetups
-Content-Type: application/json
-
-{
-  "proposed_by": "uuid1",
-  "proposed_to": "uuid2",
-  "location_name": "Central Park Cafe",
-  "location_address": "123 Main Street, Jakarta",
-  "meetup_time": "2024-02-15T15:00:00Z"
-}
-```
-
-#### Get All Meetups
-```http
-GET /api/v1/meetups?include_details=true&status=proposed
-```
-
-#### Get Meetup by ID
-```http
-GET /api/v1/meetups/{id}
-```
-
-#### Update Meetup
-```http
-PUT /api/v1/meetups/{id}
-Content-Type: application/json
-
-{
-  "location_name": "Updated Location",
-  "meetup_time": "2024-02-16T15:00:00Z"
-}
-```
-
-#### Confirm Meetup
-```http
-PUT /api/v1/meetups/{id}/confirm
-```
-
-#### Complete Meetup
-```http
-PUT /api/v1/meetups/{id}/complete
-```
-
-### Interaction Management
-
-#### Create Review/Rating
-```http
-POST /api/v1/interactions
-Content-Type: application/json
-
-{
-  "meetup_id": "meetup_uuid",
-  "reviewer_id": "reviewer_uuid",
-  "reviewed_user_id": "reviewed_uuid",
-  "rating": 5,
-  "review_text": "Great cultural exchange experience!",
-  "meetup_photo_url": "https://cloudinary.com/photo.jpg"
-}
-```
-
-#### Get All Interactions
-```http
-GET /api/v1/interactions
-```
-
-#### Get Interaction by ID
-```http
-GET /api/v1/interactions/{id}
-```
-
-### AI Integration Endpoints
-
-#### Gemini Text Generation
-```http
-POST /api/v1/gemini/generate
-Content-Type: application/json
-
-{
-  "prompt": "Tell me about Indonesian traditional dance",
-  "context": "Cultural learning platform",
-  "user_id": "user123"
-}
-```
-
-#### Gemini Chat
-```http
-POST /api/v1/gemini/chat
-Content-Type: application/json
-
-{
-  "messages": [
-    {
-      "role": "user",
-      "content": "What should I know about Japanese tea ceremony?"
-    }
-  ],
-  "user_id": "user123"
-}
-```
-
-#### OpenAI Endpoints
-Similar structure available at:
-- `POST /api/v1/openai/generate`
-- `POST /api/v1/openai/chat`
-- `GET /api/v1/openai/models`
+**Base URL:** `http://localhost:8080`
 
 ## Authentication
 
-The API uses token-based authentication:
-
-1. **Register** or **Login** to receive a token
-2. Include token in `Authorization` header: `Bearer <token>`
-3. Tokens expire after 24 hours
-4. Passwords are hashed using bcrypt
-
-### Protected Routes
-Most endpoints require authentication. Public endpoints:
-- `POST /auth/register`
-- `POST /auth/login`
-- `GET /health`
-
-## WebSocket Chat
-
-Real-time chat functionality for coordinating meetups.
-
-### Connection
-```javascript
-const ws = new WebSocket('ws://localhost:8080/api/v1/chat?id=user_id');
+Most endpoints require authentication. Include the authorization token in the header:
+```
+Authorization: Bearer <your-token>
 ```
 
-### Message Format
+## Endpoint Categories
+
+- [Health Check](#health-check)
+- [Authentication](#authentication-endpoints)
+- [User Management](#user-management)
+- [Friends](#friends-management)
+- [Meetups](#meetups-management)
+- [Interactions](#interactions-management)
+- [AI Services](#ai-services)
+- [File Upload](#file-upload)
+- [Chat](#chat)
+
+---
+
+## Health Check
+
+### Get Server Health
+Check if the server is running.
+
+**Endpoint:** `GET /api/v1/health`
+
+**Response:**
 ```json
 {
-  "sender": "sender_user_id",
-  "receiver": "receiver_user_id",
-  "text": "Hello! Ready for our meetup?",
-  "image_url": "optional_image_url"
+  "status": "ok",
+  "message": "Server is running"
 }
 ```
 
-### Features
-- Real-time messaging between users
-- Image sharing support
-- Connection management per user ID
-- Message broadcasting to intended recipients
-
-## AI Integration
-
-### Supported Providers
-
-#### 1. Gemini AI (Google)
-- **Endpoints**: `/api/v1/gemini/*`
-- **Models**: Flash (fast), Pro (advanced)
-- **Features**: Text generation, chat conversations
-- **Use Cases**: Cultural information, travel advice
-
-#### 2. OpenAI (ChatGPT)
-- **Endpoints**: `/api/v1/openai/*`
-- **Models**: GPT-3.5 Turbo, GPT-4
-- **Features**: Text completion, chat with system prompts
-- **Use Cases**: Conversation assistance, content generation
-
-### AI Service Features
-- Cultural information and advice
-- Travel recommendations
-- Language learning support
-- Meetup activity suggestions
-- Cross-cultural communication tips
-
-## Environment Variables
-
-Create a `.env` file in the server directory:
-
+**Example:**
 ```bash
-# Database
-DATABASE_URL=postgresql://username:password@localhost:5432/tukarkultur_db
-
-# Server
-PORT=8080
-
-# AI APIs (Optional)
-GEMINI_API_KEY=your_gemini_api_key_here
-OPENAI_API_KEY=your_openai_api_key_here
-
-# CORS (Optional)
-ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
+curl -X GET http://localhost:8080/api/v1/health
 ```
 
-## Testing
+---
 
-### Manual Testing with cURL
+## Authentication Endpoints
 
-Health check:
-```bash
-curl http://localhost:8080/api/v1/health
+### Register User
+Register a new user account.
+
+**Endpoint:** `POST /api/v1/auth/register`
+
+**Request Body:**
+```json
+{
+  "username": "johndoe",
+  "email": "john@example.com",
+  "password": "securepassword123",
+  "full_name": "John Doe",
+  "bio": "Cultural enthusiast",
+  "age": 25,
+  "city": "Jakarta",
+  "country": "Indonesia",
+  "interests": ["cooking", "music", "art"]
+}
 ```
 
-Register user:
+**Response:**
+```json
+{
+  "message": "User registered successfully",
+  "user_id": "uuid-here",
+  "token": "jwt-token-here"
+}
+```
+
+**Example:**
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "testuser",
-    "email": "test@example.com",
-    "password": "password123",
-    "full_name": "Test User"
+    "username": "johndoe",
+    "email": "john@example.com",
+    "password": "securepassword123",
+    "full_name": "John Doe",
+    "bio": "Cultural enthusiast",
+    "age": 25,
+    "city": "Jakarta",
+    "country": "Indonesia",
+    "interests": ["cooking", "music", "art"]
   }'
 ```
 
-Login:
+### Login User
+Authenticate user and get access token.
+
+**Endpoint:** `POST /api/v1/auth/login`
+
+**Request Body:**
+```json
+{
+  "username": "johndoe",
+  "password": "securepassword123"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Login successful",
+  "token": "jwt-token-here",
+  "user": {
+    "id": "uuid-here",
+    "username": "johndoe",
+    "email": "john@example.com"
+  }
+}
+```
+
+**Example:**
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "test@example.com",
-    "password": "password123"
+    "username": "johndoe",
+    "password": "securepassword123"
   }'
 ```
 
-### AI API Testing
+### Logout User
+Logout user and invalidate token.
 
-Test Gemini:
+**Endpoint:** `POST /api/v1/auth/logout`
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+```json
+{
+  "message": "Logout successful"
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/logout \
+  -H "Authorization: Bearer <your-token>"
+```
+
+---
+
+## User Management
+
+### Create User
+Create a new user profile.
+
+**Endpoint:** `POST /api/v1/users`
+
+**Request Body:**
+```json
+{
+  "username": "jane_doe",
+  "email": "jane@example.com",
+  "password": "password123",
+  "full_name": "Jane Doe",
+  "bio": "Travel enthusiast",
+  "age": 28,
+  "city": "Bali",
+  "country": "Indonesia",
+  "interests": ["photography", "culture", "food"]
+}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid-here",
+  "username": "jane_doe",
+  "email": "jane@example.com",
+  "full_name": "Jane Doe",
+  "bio": "Travel enthusiast",
+  "age": 28,
+  "city": "Bali",
+  "country": "Indonesia",
+  "interests": ["photography", "culture", "food"],
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### Get User by ID
+Retrieve user information by ID.
+
+**Endpoint:** `GET /api/v1/users/{id}`
+
+**Response:**
+```json
+{
+  "id": "uuid-here",
+  "username": "jane_doe",
+  "email": "jane@example.com",
+  "full_name": "Jane Doe",
+  "bio": "Travel enthusiast",
+  "age": 28,
+  "city": "Bali",
+  "country": "Indonesia",
+  "interests": ["photography", "culture", "food"]
+}
+```
+
+**Example:**
+```bash
+curl -X GET http://localhost:8080/api/v1/users/uuid-here
+```
+
+### Get All Users
+Retrieve all users with optional filtering.
+
+**Endpoint:** `GET /api/v1/users`
+
+**Query Parameters:**
+- `city` (optional): Filter by city
+- `country` (optional): Filter by country
+- `age_min` (optional): Minimum age
+- `age_max` (optional): Maximum age
+
+**Response:**
+```json
+{
+  "users": [
+    {
+      "id": "uuid-1",
+      "username": "user1",
+      "full_name": "User One",
+      "city": "Jakarta",
+      "country": "Indonesia"
+    },
+    {
+      "id": "uuid-2",
+      "username": "user2",
+      "full_name": "User Two",
+      "city": "Bali",
+      "country": "Indonesia"
+    }
+  ]
+}
+```
+
+**Example:**
+```bash
+curl -X GET "http://localhost:8080/api/v1/users?city=Jakarta&country=Indonesia"
+```
+
+### Update User
+Update user profile information.
+
+**Endpoint:** `PUT /api/v1/users/{id}`
+
+**Request Body:**
+```json
+{
+  "full_name": "Updated Name",
+  "bio": "Updated bio",
+  "age": 30,
+  "city": "Yogyakarta",
+  "interests": ["art", "history", "culture"]
+}
+```
+
+**Example:**
+```bash
+curl -X PUT http://localhost:8080/api/v1/users/uuid-here \
+  -H "Content-Type: application/json" \
+  -d '{
+    "full_name": "Updated Name",
+    "bio": "Updated bio",
+    "city": "Yogyakarta"
+  }'
+```
+
+### Delete User
+Delete a user account.
+
+**Endpoint:** `DELETE /api/v1/users/{id}`
+
+**Response:**
+```json
+{
+  "message": "User deleted successfully"
+}
+```
+
+---
+
+## Friends Management
+
+### Add Friend
+Send or accept a friend request.
+
+**Endpoint:** `POST /api/v1/friends`
+
+**Request Body:**
+```json
+{
+  "user_id": "uuid-user1",
+  "friend_id": "uuid-user2"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "friendship-uuid",
+  "user_id": "uuid-user1",
+  "friend_id": "uuid-user2",
+  "status": "pending",
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:8080/api/v1/friends \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "uuid-user1",
+    "friend_id": "uuid-user2"
+  }'
+```
+
+### Get All Friends
+Get all friendship relationships.
+
+**Endpoint:** `GET /api/v1/friends`
+
+**Response:**
+```json
+{
+  "friendships": [
+    {
+      "id": "friendship-uuid",
+      "user_id": "uuid-user1",
+      "friend_id": "uuid-user2",
+      "status": "accepted"
+    }
+  ]
+}
+```
+
+### Get Friends by User ID
+Get all friends for a specific user.
+
+**Endpoint:** `GET /api/v1/friends/user/{id}`
+
+**Response:**
+```json
+{
+  "friends": [
+    {
+      "id": "uuid-friend1",
+      "username": "friend1",
+      "full_name": "Friend One",
+      "city": "Jakarta"
+    }
+  ]
+}
+```
+
+### Remove Friend
+Remove a friendship.
+
+**Endpoint:** `DELETE /api/v1/friends`
+
+**Request Body:**
+```json
+{
+  "user_id": "uuid-user1",
+  "friend_id": "uuid-user2"
+}
+```
+
+---
+
+## Meetups Management
+
+### Create Meetup
+Create a new cultural meetup event.
+
+**Endpoint:** `POST /api/v1/meetups`
+
+**Request Body:**
+```json
+{
+  "title": "Indonesian Cooking Class",
+  "description": "Learn to cook traditional Indonesian dishes",
+  "location": "Jakarta Cultural Center",
+  "datetime": "2024-02-15T14:00:00Z",
+  "max_participants": 10,
+  "organizer_id": "uuid-organizer",
+  "category": "cooking",
+  "requirements": ["Bring apron", "Basic cooking knowledge"],
+  "latitude": -6.2088,
+  "longitude": 106.8456
+}
+```
+
+**Response:**
+```json
+{
+  "id": "meetup-uuid",
+  "title": "Indonesian Cooking Class",
+  "description": "Learn to cook traditional Indonesian dishes",
+  "location": "Jakarta Cultural Center",
+  "datetime": "2024-02-15T14:00:00Z",
+  "max_participants": 10,
+  "organizer_id": "uuid-organizer",
+  "status": "pending",
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:8080/api/v1/meetups \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Indonesian Cooking Class",
+    "description": "Learn to cook traditional Indonesian dishes",
+    "location": "Jakarta Cultural Center",
+    "datetime": "2024-02-15T14:00:00Z",
+    "max_participants": 10,
+    "organizer_id": "uuid-organizer"
+  }'
+```
+
+### Get All Meetups
+Retrieve all meetups with optional filtering.
+
+**Endpoint:** `GET /api/v1/meetups`
+
+**Query Parameters:**
+- `include_details=true`: Include detailed user information
+- `status`: Filter by status (pending, confirmed, completed, cancelled)
+
+**Response:**
+```json
+{
+  "meetups": [
+    {
+      "id": "meetup-uuid",
+      "title": "Indonesian Cooking Class",
+      "description": "Learn to cook traditional Indonesian dishes",
+      "location": "Jakarta Cultural Center",
+      "datetime": "2024-02-15T14:00:00Z",
+      "status": "confirmed",
+      "organizer": {
+        "id": "uuid-organizer",
+        "username": "chef_indo",
+        "full_name": "Chef Indonesia"
+      }
+    }
+  ]
+}
+```
+
+**Examples:**
+```bash
+# Get all meetups
+curl -X GET http://localhost:8080/api/v1/meetups
+
+# Get meetups with detailed user info
+curl -X GET "http://localhost:8080/api/v1/meetups?include_details=true"
+
+# Get meetups by status
+curl -X GET "http://localhost:8080/api/v1/meetups?status=confirmed"
+```
+
+### Get Meetup by ID
+Get detailed information about a specific meetup.
+
+**Endpoint:** `GET /api/v1/meetups/{id}`
+
+**Response:**
+```json
+{
+  "id": "meetup-uuid",
+  "title": "Indonesian Cooking Class",
+  "description": "Learn to cook traditional Indonesian dishes",
+  "location": "Jakarta Cultural Center",
+  "datetime": "2024-02-15T14:00:00Z",
+  "max_participants": 10,
+  "current_participants": 5,
+  "organizer": {
+    "id": "uuid-organizer",
+    "username": "chef_indo",
+    "full_name": "Chef Indonesia"
+  },
+  "participants": [
+    {
+      "id": "uuid-participant1",
+      "username": "foodlover",
+      "full_name": "Food Lover"
+    }
+  ]
+}
+```
+
+### Get Meetups by User ID
+Get all meetups organized by a specific user.
+
+**Endpoint:** `GET /api/v1/meetups/user/{id}`
+
+**Response:**
+```json
+{
+  "meetups": [
+    {
+      "id": "meetup-uuid",
+      "title": "Indonesian Cooking Class",
+      "status": "confirmed",
+      "datetime": "2024-02-15T14:00:00Z"
+    }
+  ]
+}
+```
+
+### Update Meetup
+Update meetup information.
+
+**Endpoint:** `PUT /api/v1/meetups/{id}`
+
+**Request Body:**
+```json
+{
+  "title": "Updated Indonesian Cooking Class",
+  "description": "Updated description",
+  "max_participants": 15
+}
+```
+
+### Confirm Meetup
+Confirm a pending meetup.
+
+**Endpoint:** `PUT /api/v1/meetups/{id}/confirm`
+
+**Response:**
+```json
+{
+  "message": "Meetup confirmed successfully",
+  "meetup": {
+    "id": "meetup-uuid",
+    "status": "confirmed"
+  }
+}
+```
+
+### Complete Meetup
+Mark a meetup as completed.
+
+**Endpoint:** `PUT /api/v1/meetups/{id}/complete`
+
+**Response:**
+```json
+{
+  "message": "Meetup completed successfully",
+  "meetup": {
+    "id": "meetup-uuid",
+    "status": "completed"
+  }
+}
+```
+
+### Delete Meetup
+Cancel/delete a meetup.
+
+**Endpoint:** `DELETE /api/v1/meetups/{id}`
+
+**Response:**
+```json
+{
+  "message": "Meetup deleted successfully"
+}
+```
+
+---
+
+## Interactions Management
+
+### Create Interaction
+Create a new interaction/review for a meetup.
+
+**Endpoint:** `POST /api/v1/interactions`
+
+**Request Body:**
+```json
+{
+  "meetup_id": "meetup-uuid",
+  "reviewer_id": "uuid-reviewer",
+  "reviewee_id": "uuid-reviewee",
+  "rating": 5,
+  "comment": "Great cultural exchange experience!",
+  "interaction_type": "review"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "interaction-uuid",
+  "meetup_id": "meetup-uuid",
+  "reviewer_id": "uuid-reviewer",
+  "reviewee_id": "uuid-reviewee",
+  "rating": 5,
+  "comment": "Great cultural exchange experience!",
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### Get All Interactions
+Retrieve all interactions.
+
+**Endpoint:** `GET /api/v1/interactions`
+
+### Get Interaction by ID
+Get specific interaction details.
+
+**Endpoint:** `GET /api/v1/interactions/{id}`
+
+### Get Interactions by Meetup ID
+Get all interactions for a specific meetup.
+
+**Endpoint:** `GET /api/v1/interactions/meetup/{id}`
+
+### Get Interactions by User ID
+Get all interactions involving a specific user.
+
+**Endpoint:** `GET /api/v1/interactions/user/{id}`
+
+### Get Reviews for User
+Get all reviews received by a user.
+
+**Endpoint:** `GET /api/v1/interactions/reviews/{id}`
+
+**Response:**
+```json
+{
+  "reviews": [
+    {
+      "id": "interaction-uuid",
+      "rating": 5,
+      "comment": "Excellent cultural guide!",
+      "reviewer": {
+        "username": "traveler123",
+        "full_name": "John Traveler"
+      },
+      "meetup": {
+        "title": "City Cultural Tour"
+      }
+    }
+  ],
+  "average_rating": 4.8,
+  "total_reviews": 15
+}
+```
+
+### Get User Rating Stats
+Get statistical information about user ratings.
+
+**Endpoint:** `GET /api/v1/interactions/stats/{id}`
+
+**Response:**
+```json
+{
+  "user_id": "uuid-user",
+  "average_rating": 4.8,
+  "total_reviews": 15,
+  "rating_distribution": {
+    "5": 10,
+    "4": 3,
+    "3": 2,
+    "2": 0,
+    "1": 0
+  }
+}
+```
+
+### Update Interaction
+Update an existing interaction.
+
+**Endpoint:** `PUT /api/v1/interactions/{id}`
+
+### Delete Interaction
+Delete an interaction.
+
+**Endpoint:** `DELETE /api/v1/interactions/{id}`
+
+---
+
+## AI Services
+
+The API provides two AI services: Gemini (Google) and OpenAI for cultural assistance and content generation.
+
+### Gemini AI Endpoints
+
+#### Gemini Health Check
+**Endpoint:** `GET /api/v1/gemini/health`
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "service": "Gemini AI",
+  "version": "1.0.0"
+}
+```
+
+#### Get Gemini Models
+**Endpoint:** `GET /api/v1/gemini/models`
+
+**Response:**
+```json
+{
+  "models": [
+    {
+      "id": "gemini-1.5-flash-latest",
+      "name": "Gemini 1.5 Flash",
+      "description": "Fast text generation model"
+    },
+    {
+      "id": "gemini-1.5-pro-latest",
+      "name": "Gemini 1.5 Pro",
+      "description": "Advanced reasoning model"
+    }
+  ]
+}
+```
+
+#### Gemini Text Generation
+**Endpoint:** `POST /api/v1/gemini/generate`
+
+**Request Body:**
+```json
+{
+  "prompt": "Explain the cultural significance of Batik in Indonesian heritage",
+  "context": "TukarKultur cultural education platform",
+  "user_id": "uuid-user",
+  "metadata": {
+    "topic": "batik",
+    "country": "Indonesia"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "response-uuid",
+    "response": "Batik is a traditional Indonesian art form that holds deep cultural significance...",
+    "prompt": "Explain the cultural significance of Batik in Indonesian heritage",
+    "status": "completed",
+    "model": "gemini-1.5-flash-latest",
+    "usage": {
+      "prompt_tokens": 25,
+      "completion_tokens": 150,
+      "total_tokens": 175
+    }
+  }
+}
+```
+
+**Example:**
 ```bash
 curl -X POST http://localhost:8080/api/v1/gemini/generate \
   -H "Content-Type: application/json" \
   -d '{
-    "prompt": "Tell me about Balinese culture",
-    "context": "Cultural learning"
+    "prompt": "What are important cultural etiquette rules when visiting Bali?",
+    "context": "Cultural exchange preparation"
   }'
 ```
 
-### Running Tests
-```bash
-go test ./...
-```
+#### Gemini Chat
+**Endpoint:** `POST /api/v1/gemini/chat`
 
-## Deployment
-
-### Production Setup
-
-1. **Environment Configuration**:
-   - Set production database URL
-   - Configure proper CORS origins
-   - Set secure token secrets
-
-2. **Database Migration**:
-   ```bash
-   psql -d production_db -f schema.sql
-   ```
-
-3. **Build and Run**:
-   ```bash
-   go build -o tukarkultur-server server.go
-   ./tukarkultur-server
-   ```
-
-### Docker Deployment (Optional)
-
-Create `Dockerfile`:
-```dockerfile
-FROM golang:1.19-alpine AS builder
-WORKDIR /app
-COPY . .
-RUN go mod tidy && go build -o server server.go
-
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=builder /app/server .
-CMD ["./server"]
-```
-
-### Performance Considerations
-
-- Use connection pooling for database
-- Implement rate limiting for AI APIs
-- Add caching for frequently accessed data
-- Monitor database query performance
-- Implement proper logging and monitoring
-
-## Error Handling
-
-The API returns consistent error responses:
-
+**Request Body:**
 ```json
 {
-  "error": "Error description",
-  "code": "ERROR_CODE",
-  "details": "Additional details if available"
+  "messages": [
+    {
+      "role": "user",
+      "content": "I want to learn about traditional Indonesian music. Where should I start?"
+    }
+  ],
+  "context": "Cultural learning through TukarKultur",
+  "user_id": "uuid-user"
 }
 ```
 
-### Common HTTP Status Codes
-- `200` - Success
-- `201` - Created
-- `400` - Bad Request
-- `401` - Unauthorized
-- `403` - Forbidden
-- `404` - Not Found
-- `409` - Conflict
-- `500` - Internal Server Error
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "chat-uuid",
+    "messages": [
+      {
+        "role": "user",
+        "content": "I want to learn about traditional Indonesian music. Where should I start?"
+      },
+      {
+        "role": "model",
+        "content": "Traditional Indonesian music is incredibly diverse. I'd recommend starting with gamelan..."
+      }
+    ],
+    "response": "Traditional Indonesian music is incredibly diverse. I'd recommend starting with gamelan...",
+    "status": "completed"
+  }
+}
+```
 
-## Contributing
+### OpenAI Endpoints
 
-1. Follow Go conventions and best practices
-2. Add tests for new features
-3. Update documentation for API changes
-4. Use meaningful commit messages
-5. Ensure proper error handling
+#### OpenAI Health Check
+**Endpoint:** `GET /api/v1/openai/health`
 
-## License
+#### Get OpenAI Models
+**Endpoint:** `GET /api/v1/openai/models`
 
-[Add your license information here]
+#### OpenAI Text Generation
+**Endpoint:** `POST /api/v1/openai/generate`
+
+**Request Body:**
+```json
+{
+  "prompt": "Create a guide for Japanese tea ceremony etiquette",
+  "model": "gpt-3.5-turbo-instruct",
+  "max_tokens": 200,
+  "temperature": 0.7,
+  "context": "Cultural preparation guide",
+  "user_id": "uuid-user"
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:8080/api/v1/openai/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Explain Korean business card exchange etiquette",
+    "model": "gpt-3.5-turbo-instruct",
+    "max_tokens": 150
+  }'
+```
+
+#### OpenAI Chat
+**Endpoint:** `POST /api/v1/openai/chat`
+
+**Request Body:**
+```json
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a cultural exchange expert helping people understand different cultures."
+    },
+    {
+      "role": "user",
+      "content": "What should I know about dining etiquette in Thailand?"
+    }
+  ],
+  "model": "gpt-3.5-turbo",
+  "max_tokens": 200,
+  "temperature": 0.8
+}
+```
 
 ---
 
-For more detailed API documentation and examples, refer to:
-- `AI_API_DOCS.md` - Comprehensive AI integration guide
-- `CURL_TESTS.md` - Complete cURL testing commands
-- `GEMINI_README.md` - Gemini AI specific documentation
+## File Upload
+
+### Upload Image
+Upload an image file to Cloudinary.
+
+**Endpoint:** `POST /api/v1/upload/image`
+
+**Request:** Multipart form data
+- `file`: Image file
+- `folder` (optional): Cloudinary folder
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "public_id": "sample_image_id",
+    "url": "https://res.cloudinary.com/demo/image/upload/sample_image_id",
+    "secure_url": "https://res.cloudinary.com/demo/image/upload/sample_image_id",
+    "width": 1024,
+    "height": 768,
+    "format": "jpg"
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:8080/api/v1/upload/image \
+  -F "file=@/path/to/your/image.jpg" \
+  -F "folder=meetup_photos"
+```
+
+### Upload Profile Image
+Upload a profile image (requires authentication).
+
+**Endpoint:** `POST /api/v1/upload/profile-image`
+
+**Headers:** `Authorization: Bearer <token>`
+
+### Delete Image
+Delete an image from Cloudinary.
+
+**Endpoint:** `DELETE /api/v1/upload/image/{public_id}`
+
+### Get Optimized Image URL
+Get an optimized version of an uploaded image.
+
+**Endpoint:** `GET /api/v1/upload/optimized-url/{public_id}`
+
+**Query Parameters:**
+- `width` (optional): Target width
+- `height` (optional): Target height
+- `quality` (optional): Image quality (1-100)
+
+---
+
+## Chat
+
+### WebSocket Connection
+Connect to real-time chat using WebSocket.
+
+**Endpoint:** `GET /api/v1/chat`
+
+This endpoint upgrades the HTTP connection to WebSocket for real-time messaging.
+
+**Example (JavaScript):**
+```javascript
+const ws = new WebSocket('ws://localhost:8080/api/v1/chat');
+
+ws.onopen = function(event) {
+    console.log('Connected to chat');
+};
+
+ws.onmessage = function(event) {
+    const message = JSON.parse(event.data);
+    console.log('Received:', message);
+};
+
+ws.send(JSON.stringify({
+    type: 'message',
+    content: 'Hello from TukarKultur!',
+    user_id: 'uuid-user',
+    room_id: 'meetup-uuid'
+}));
+```
+
+---
+
+## Error Responses
+
+All endpoints return consistent error formats:
+
+**400 Bad Request:**
+```json
+{
+  "error": "Validation failed",
+  "details": "Email is required"
+}
+```
+
+**401 Unauthorized:**
+```json
+{
+  "error": "Unauthorized",
+  "details": "Invalid or missing authentication token"
+}
+```
+
+**404 Not Found:**
+```json
+{
+  "error": "Resource not found",
+  "details": "User with ID uuid-123 not found"
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Internal server error",
+  "details": "Database connection failed"
+}
+```
+
+---
+
+## Rate Limiting
+
+- AI endpoints have a 30-second timeout
+- File upload endpoints have a 10MB size limit
+- WebSocket connections are limited to 100 concurrent connections per IP
+
+---
+
+## Environment Variables
+
+Required environment variables for the server:
+
+```bash
+# Database
+DATABASE_URL=postgresql://username:password@localhost:5432/tukarkultur
+
+# Server
+PORT=8080
+
+# AI Services
+GEMINI_API_KEY=your_gemini_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+---
+
+## Testing
+
+### Run All Tests
+```bash
+cd BE/server
+./test_ai_apis.sh
+```
+
+### Quick Health Check
+```bash
+curl -X GET http://localhost:8080/api/v1/health
+curl -X GET http://localhost:8080/api/v1/gemini/health
+curl -X GET http://localhost:8080/api/v1/openai/health
+```
+
+### Test Authentication Flow
+```bash
+# Register
+curl -X POST http://localhost:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","email":"test@example.com","password":"password123"}'
+
+# Login
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","password":"password123"}'
