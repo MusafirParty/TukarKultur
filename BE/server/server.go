@@ -42,6 +42,7 @@ func main() {
 	friendRepo := repository.NewFriendRepository(db)
 	meetupRepo := repository.NewMeetupRepository(db)
 	interactionRepo := repository.NewInteractionRepository(db)
+	authRepo := repository.NewAuthRepository(db)
 
 	// Initialize AI services
 	geminiService := services.NewGeminiService()
@@ -54,6 +55,7 @@ func main() {
 	interactionHandler := handlers.NewInteractionHandler(interactionRepo, meetupRepo)
 	geminiHandler := handlers.NewGeminiHandler(geminiService)
 	openaiHandler := handlers.NewOpenAIHandler(openaiService)
+	authHandler := handlers.NewAuthHandler(authRepo)
 
 	// Setup Gin router
 	router := gin.Default()
@@ -73,7 +75,7 @@ func main() {
 	})
 
 	// Setup routes
-	routes.SetupRoutes(router, userHandler, geminiHandler, openaiHandler, friendHandler, meetupHandler, interactionHandler)
+	routes.SetupRoutes(router, userHandler, geminiHandler, openaiHandler, friendHandler, meetupHandler, interactionHandler, authHandler)
 
 	// Start server
 	log.Printf("🚀 Server starting on port %s", port)

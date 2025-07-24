@@ -12,7 +12,10 @@ func SetupRoutes(
 	userHandler *handlers.UserHandler,
 	geminiHandler *handlers.GeminiHandler,
 	openaiHandler *handlers.OpenAIHandler,
-	friendHandler *handlers.FriendHandler, meetupHandler *handlers.MeetupHandler, interactionHandler *handlers.InteractionHandler,
+	friendHandler *handlers.FriendHandler,
+	meetupHandler *handlers.MeetupHandler,
+	interactionHandler *handlers.InteractionHandler,
+	authHandler *handlers.AuthHandler, // Add auth handler
 ) {
 	// Health check endpoint
 	router.GET("/api/v1/health", func(c *gin.Context) {
@@ -25,6 +28,14 @@ func SetupRoutes(
 	// API v1 routes
 	v1 := router.Group("/api/v1")
 	{
+		// Auth routes (no authentication required)
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/register", authHandler.Register)
+			auth.POST("/login", authHandler.Login)
+			auth.POST("/logout", authHandler.Logout)
+		}
+
 		// User routes
 		users := v1.Group("/users")
 		{
