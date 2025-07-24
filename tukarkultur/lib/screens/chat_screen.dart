@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -13,7 +14,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(CupertinoIcons.arrow_left, color: Colors.black),
           onPressed: () {},
         ),
         title: Column(
@@ -76,37 +77,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: TextButton(
-                        onPressed: () {},
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.black,
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: Text('Close Chat'),
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () {},
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.black,
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: Text('Save Interaction Summary'),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
                       child: Container(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextField(
                           controller: _messageController,
@@ -121,7 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     SizedBox(width: 8),
                     IconButton(
                       onPressed: () {},
-                      icon: Icon(Icons.image_outlined, color: Colors.black),
+                      icon: Icon(Icons.send, color: Colors.black),
                     ),
                   ],
                 ),
@@ -172,7 +147,8 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
         Flexible(
           child: Column(
-            crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment:
+                isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
               if (!isMe)
                 Padding(
@@ -189,7 +165,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: isMe ? Color(0xFFE6B800) : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   text,
