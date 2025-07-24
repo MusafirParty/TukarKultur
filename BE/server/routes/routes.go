@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRoutes(router *gin.Engine, userHandler *handlers.UserHandler, friendHandler *handlers.FriendHandler) {
+func SetupRoutes(router *gin.Engine, userHandler *handlers.UserHandler, friendHandler *handlers.FriendHandler, meetupHandler *handlers.MeetupHandler, interactionHandler *handlers.InteractionHandler) {
 	// Health check endpoint
 	router.GET("/api/v1/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -36,6 +36,32 @@ func SetupRoutes(router *gin.Engine, userHandler *handlers.UserHandler, friendHa
 			friends.GET("", friendHandler.GetAllFriends)
 			friends.GET("/user/:id", friendHandler.GetFriendsByUserID)
 			friends.DELETE("", friendHandler.DeleteFriend)
+		}
+
+		// Meetup routes
+		meetups := v1.Group("/meetups")
+		{
+			meetups.POST("", meetupHandler.CreateMeetup)
+			meetups.GET("", meetupHandler.GetAllMeetups)
+			meetups.GET("/:id", meetupHandler.GetMeetup)
+			meetups.GET("/user/:id", meetupHandler.GetMeetupsByUserID)
+			meetups.PUT("/:id", meetupHandler.UpdateMeetup)
+			meetups.PUT("/:id/confirm", meetupHandler.ConfirmMeetup)
+			meetups.PUT("/:id/complete", meetupHandler.CompleteMeetup)
+			meetups.DELETE("/:id", meetupHandler.DeleteMeetup)
+		}
+
+		interactions := v1.Group("/interactions")
+		{
+			interactions.POST("", interactionHandler.CreateInteraction)
+			interactions.GET("", interactionHandler.GetAllInteractions)
+			interactions.GET("/:id", interactionHandler.GetInteraction)
+			interactions.GET("/meetup/:id", interactionHandler.GetInteractionsByMeetupID)
+			interactions.GET("/user/:id", interactionHandler.GetInteractionsByUserID)
+			interactions.GET("/reviews/:id", interactionHandler.GetReviewsForUser)
+			interactions.GET("/stats/:id", interactionHandler.GetUserRatingStats)
+			interactions.PUT("/:id", interactionHandler.UpdateInteraction)
+			interactions.DELETE("/:id", interactionHandler.DeleteInteraction)
 		}
 	}
 }
