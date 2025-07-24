@@ -52,7 +52,7 @@ func main() {
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userRepo, cloudinaryService)
-	friendHandler := handlers.NewFriendHandler(friendRepo)
+	friendHandler := handlers.NewFriendHandler(friendRepo, userRepo)
 	meetupHandler := handlers.NewMeetupHandler(meetupRepo)
 	interactionHandler := handlers.NewInteractionHandler(interactionRepo, meetupRepo)
 	geminiHandler := handlers.NewGeminiHandler(geminiService)

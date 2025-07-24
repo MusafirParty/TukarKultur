@@ -2,158 +2,189 @@ package repository
 
 import (
 	"database/sql"
-	"time"
+	"fmt"
 	"tukarkultur/api/models"
+
+	"github.com/jmoiron/sqlx"
 
 	"github.com/google/uuid"
 )
 
 type FriendRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewFriendRepository(db *sql.DB) *FriendRepository {
+func NewFriendRepository(db *sqlx.DB) *FriendRepository {
 	return &FriendRepository{db: db}
 }
 
+// Existing friend methods (keep as is)
 func (r *FriendRepository) Create(friend *models.Friend) error {
-	query := `
-        INSERT INTO friends (user_id_1, user_id_2, created_at) 
-        VALUES ($1, $2, $3)
-        RETURNING created_at`
-
-	friend.CreatedAt = time.Now()
-
-	err := r.db.QueryRow(
-		query,
-		friend.UserID1,
-		friend.UserID2,
-		friend.CreatedAt,
-	).Scan(&friend.CreatedAt)
-
+	query := `INSERT INTO friends (user_id_1, user_id_2, created_at) VALUES ($1, $2, NOW())`
+	_, err := r.db.Exec(query, friend.UserID1, friend.UserID2)
 	return err
 }
 
-func (r *FriendRepository) GetFriendsByUserID(userID uuid.UUID) ([]*models.Friend, error) {
+func (r *FriendRepository) GetFriendsByUserID(userID uuid.UUID) ([]models.Friend, error) {
+	var friends []models.Friend
 	query := `
-        SELECT user_id_1, user_id_2, created_at 
-        FROM friends 
+        SELECT user_id_1, user_id_2, created_at FROM friends 
         WHERE user_id_1 = $1 OR user_id_2 = $1
-        ORDER BY created_at DESC`
-
-	rows, err := r.db.Query(query, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var friends []*models.Friend
-	for rows.Next() {
-		friend := &models.Friend{}
-		err := rows.Scan(
-			&friend.UserID1,
-			&friend.UserID2,
-			&friend.CreatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		friends = append(friends, friend)
-	}
-
-	return friends, nil
-}
-
-func (r *FriendRepository) GetAll() ([]*models.Friend, error) {
-	query := `
-        SELECT user_id_1, user_id_2, created_at 
-        FROM friends 
-        ORDER BY created_at DESC`
-
-	rows, err := r.db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var friends []*models.Friend
-	for rows.Next() {
-		friend := &models.Friend{}
-		err := rows.Scan(
-			&friend.UserID1,
-			&friend.UserID2,
-			&friend.CreatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		friends = append(friends, friend)
-	}
-
-	return friends, nil
+        ORDER BY created_at DESC
+    `
+	err := r.db.Select(&friends, query, userID)
+	return friends, err
 }
 
 func (r *FriendRepository) Delete(userID1, userID2 uuid.UUID) error {
-	query := `
-        DELETE FROM friends 
-        WHERE (user_id_1 = $1 AND user_id_2 = $2) 
-           OR (user_id_1 = $2 AND user_id_2 = $1)`
-
+	query := `DELETE FROM friends WHERE (user_id_1 = $1 AND user_id_2 = $2) OR (user_id_1 = $2 AND user_id_2 = $1)`
 	_, err := r.db.Exec(query, userID1, userID2)
 	return err
 }
 
-func (r *FriendRepository) Exists(userID1, userID2 uuid.UUID) (bool, error) {
-	query := `
-        SELECT COUNT(*) FROM friends 
-        WHERE (user_id_1 = $1 AND user_id_2 = $2) 
-           OR (user_id_1 = $2 AND user_id_2 = $1)`
-
+func (r *FriendRepository) AreFriends(userID1, userID2 uuid.UUID) (bool, error) {
 	var count int
-	err := r.db.QueryRow(query, userID1, userID2).Scan(&count)
-	if err != nil {
-		return false, err
-	}
-
-	return count > 0, nil
+	query := `SELECT COUNT(*) FROM friends WHERE (user_id_1 = $1 AND user_id_2 = $2) OR (user_id_1 = $2 AND user_id_2 = $1)`
+	err := r.db.Get(&count, query, userID1, userID2)
+	return count > 0, err
 }
 
-func (r *FriendRepository) GetFriendsWithUserDetails(userID uuid.UUID) ([]*models.FriendResponse, error) {
+// New friend request methods
+func (r *FriendRepository) CreateFriendRequest(friendRequest *models.FriendRequest) error {
 	query := `
-        SELECT f.user_id_1, f.user_id_2, f.created_at,
-               u1.id, u1.username, u1.email, u1.full_name, u1.profile_picture_url, u1.bio, u1.city, u1.country,
-               u2.id, u2.username, u2.email, u2.full_name, u2.profile_picture_url, u2.bio, u2.city, u2.country
-        FROM friends f
-        JOIN users u1 ON f.user_id_1 = u1.id
-        JOIN users u2 ON f.user_id_2 = u2.id
-        WHERE f.user_id_1 = $1 OR f.user_id_2 = $1
-        ORDER BY f.created_at DESC`
+        INSERT INTO friend_requests (id, requester_id, recipient_id, status, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, NOW(), NOW())
+    `
+	_, err := r.db.Exec(query, friendRequest.ID, friendRequest.RequesterID, friendRequest.RecipientID, friendRequest.Status)
+	return err
+}
 
-	rows, err := r.db.Query(query, userID)
+func (r *FriendRepository) GetFriendRequestByID(id uuid.UUID) (*models.FriendRequest, error) {
+	var friendRequest models.FriendRequest
+	query := `SELECT * FROM friend_requests WHERE id = $1`
+	err := r.db.Get(&friendRequest, query, id)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	return &friendRequest, nil
+}
 
-	var friends []*models.FriendResponse
-	for rows.Next() {
-		friend := &models.FriendResponse{}
-		user1 := &models.User{}
-		user2 := &models.User{}
-
-		err := rows.Scan(
-			&friend.UserID1, &friend.UserID2, &friend.CreatedAt,
-			&user1.ID, &user1.Username, &user1.Email, &user1.FullName, &user1.ProfilePictureURL, &user1.Bio, &user1.City, &user1.Country,
-			&user2.ID, &user2.Username, &user2.Email, &user2.FullName, &user2.ProfilePictureURL, &user2.Bio, &user2.City, &user2.Country,
-		)
-		if err != nil {
-			return nil, err
+func (r *FriendRepository) GetFriendRequestByUsers(requesterID, recipientID uuid.UUID) (*models.FriendRequest, error) {
+	var friendRequest models.FriendRequest
+	query := `
+        SELECT * FROM friend_requests 
+        WHERE (requester_id = $1 AND recipient_id = $2) 
+           OR (requester_id = $2 AND recipient_id = $1)
+    `
+	err := r.db.Get(&friendRequest, query, requesterID, recipientID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
 		}
+		return nil, err
+	}
+	return &friendRequest, nil
+}
 
-		friend.User1 = user1
-		friend.User2 = user2
-		friends = append(friends, friend)
+func (r *FriendRepository) GetPendingFriendRequests(userID uuid.UUID) ([]models.FriendRequest, error) {
+	var requests []models.FriendRequest
+	query := `
+        SELECT * FROM friend_requests 
+        WHERE recipient_id = $1 AND status = 'pending'
+        ORDER BY created_at DESC
+    `
+	err := r.db.Select(&requests, query, userID)
+	return requests, err
+}
+
+func (r *FriendRepository) GetSentFriendRequests(userID uuid.UUID) ([]models.FriendRequest, error) {
+	var requests []models.FriendRequest
+	query := `
+        SELECT * FROM friend_requests 
+        WHERE requester_id = $1
+        ORDER BY created_at DESC
+    `
+	err := r.db.Select(&requests, query, userID)
+	return requests, err
+}
+
+func (r *FriendRepository) UpdateFriendRequestStatus(id uuid.UUID, status string) error {
+	query := `
+        UPDATE friend_requests 
+        SET status = $1, updated_at = NOW()
+        WHERE id = $2
+    `
+	result, err := r.db.Exec(query, status, id)
+	if err != nil {
+		return err
 	}
 
-	return friends, nil
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("friend request not found")
+	}
+
+	return nil
+}
+
+func (r *FriendRepository) DeleteFriendRequest(id uuid.UUID) error {
+	query := `DELETE FROM friend_requests WHERE id = $1`
+	result, err := r.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("friend request not found")
+	}
+
+	return nil
+}
+
+// Helper method to accept friend request and create friendship
+func (r *FriendRepository) AcceptFriendRequest(requestID uuid.UUID) error {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Get the friend request
+	var friendRequest models.FriendRequest
+	query := `SELECT * FROM friend_requests WHERE id = $1 AND status = 'pending'`
+	err = tx.Get(&friendRequest, query, requestID)
+	if err != nil {
+		return err
+	}
+
+	// Update request status to accepted
+	query = `UPDATE friend_requests SET status = 'accepted', updated_at = NOW() WHERE id = $1`
+	_, err = tx.Exec(query, requestID)
+	if err != nil {
+		return err
+	}
+
+	// Create friendship (both directions for easier querying)
+	query = `INSERT INTO friends (user_id_1, user_id_2, created_at) VALUES ($1, $2, NOW())`
+	_, err = tx.Exec(query, friendRequest.RequesterID, friendRequest.RecipientID)
+	if err != nil {
+		return err
+	}
+
+	query = `INSERT INTO friends (user_id_1, user_id_2, created_at) VALUES ($1, $2, NOW())`
+	_, err = tx.Exec(query, friendRequest.RecipientID, friendRequest.RequesterID)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
