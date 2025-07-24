@@ -1,0 +1,6 @@
+./BE/config
+./BE/controllers
+./BE/database
+./BE/models
+./BE/routes
+./BE/utils
