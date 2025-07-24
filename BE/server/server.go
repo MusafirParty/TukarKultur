@@ -38,9 +38,11 @@ func main() {
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
+	friendRepo := repository.NewFriendRepository(db)
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userRepo)
+	friendHandler := handlers.NewFriendHandler(friendRepo)
 
 	// Setup Gin router
 	router := gin.Default()
@@ -60,7 +62,7 @@ func main() {
 	})
 
 	// Setup routes
-	routes.SetupRoutes(router, userHandler)
+	routes.SetupRoutes(router, userHandler, friendHandler)
 
 	// Start server
 	log.Printf("🚀 Server starting on port %s", port)
