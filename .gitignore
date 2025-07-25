@@ -1,7 +1,0 @@
-*.env
-BE/server/.env
-./BE/server/.env
-
-build/
-tukarkultur/build/
-tukarkultur/build/
