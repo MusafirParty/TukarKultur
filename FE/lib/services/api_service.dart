@@ -347,4 +347,41 @@ class ApiService {
       return false;
     }
   }
+
+  Future<List<Map<String, dynamic>>> updateLocationAndGetNearby(
+  String userId,
+  double latitude,
+  double longitude,
+) async {
+  try {
+    print('📍 Updating location for user: $userId');
+    print('📍 Coordinates: $latitude, $longitude');
+    
+    final response = await http.put(
+      Uri.parse('$baseUrl/users/location/$userId'),
+      headers: _headers, // This should already include the auth token
+      body: jsonEncode({
+        'latitude': latitude,
+        'longitude': longitude,
+      }),
+    );
+
+    print('📍 Response status: ${response.statusCode}');
+    print('📍 Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      if (jsonData['nearby_users'] != null) {
+        print('✅ Location updated, found ${jsonData['count']} nearby users');
+        return List<Map<String, dynamic>>.from(jsonData['nearby_users']);
+      }
+    }
+    
+    print('❌ Update location failed: ${response.statusCode} - ${response.body}');
+    return [];
+  } catch (e) {
+    print('❌ Update location request failed: $e');
+    return [];
+  }
+}
 }
