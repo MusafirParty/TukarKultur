@@ -1,6 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
+import '../services/location_service.dart';
+import '../services/api_service.dart';
+import '../providers/auth_provider.dart'; // Import AuthProvider instead
+import 'dart:async';
 
 class MapScreen extends StatefulWidget {
   @override
@@ -9,37 +15,268 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   GoogleMapController? mapController;
+  final LocationService _locationService = LocationService();
+  final ApiService _apiService = ApiService();
+  // Remove this line: final AuthService _authService = AuthService();
+  
+  // Current user location
+  LatLng? _currentLocation;
+  
+  // Initial location (San Francisco)
+  static const LatLng _initialCenter = LatLng(37.7749, -122.4194);
+  
+  // Markers for nearby users
+  Set<Marker> _markers = {};
+  
+  // Timer for fetching nearby users
+  Timer? _nearbyUsersTimer;
 
-  // San Francisco coordinates
-  static const LatLng _center = LatLng(37.7749, -122.4194);
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthAndInitialize();
+  }
 
-  // Set of markers for locations
-  final Set<Marker> _markers = {
-    Marker(
-      markerId: MarkerId('alcatraz'),
-      position: LatLng(37.8267, -122.4233),
-      infoWindow: InfoWindow(title: 'Alcatraz Island'),
-    ),
-    Marker(
-      markerId: MarkerId('golden_gate'),
-      position: LatLng(37.8199, -122.4783),
-      infoWindow: InfoWindow(title: 'Golden Gate Bridge'),
-    ),
-    Marker(
-      markerId: MarkerId('india_basin'),
-      position: LatLng(37.7367, -122.3734),
-      infoWindow: InfoWindow(title: 'India Basin Shoreline'),
-    ),
-  };
+  @override
+  void dispose() {
+    _locationService.stopLocationUpdates();
+    _nearbyUsersTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkAuthAndInitialize() async {
+    // Get AuthProvider instance
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    // Check if user is logged in using AuthProvider
+    if (!authProvider.isLoggedIn || authProvider.currentUser == null) {
+      print('❌ User not logged in');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please log in to use location features')),
+      );
+      return;
+    }
+    
+    _initializeLocationServices();
+  }
+
+Future<void> _initializeLocationServices() async {
+  // Get AuthProvider instance
+  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  
+  // ADD THESE DEBUG PRINTS
+  print('🔍 Auth debug:');
+  print('🔍 isLoggedIn: ${authProvider.isLoggedIn}');
+  print('🔍 currentUser: ${authProvider.currentUser}');
+  print('🔍 currentUser.id: ${authProvider.currentUser?.id}');
+  print('🔍 currentUser.username: ${authProvider.currentUser?.username}');
+  
+  // Get the actual logged-in user ID from AuthProvider
+  final userId = authProvider.currentUser?.id;
+  
+  if (userId == null) {
+    print('❌ No user ID available');
+    return;
+  }
+  
+    print('🔑 User ID type: ${userId.runtimeType}');
+    print('🔑 User ID value: "$userId"');
+    print('🔑 User ID length: ${userId.length}');
+  
+    
+    final success = await _locationService.startLocationUpdates(userId);
+    if (success) {
+      print('✅ Location services started for user: $userId');
+      
+      // Get initial position
+      final position = await _locationService.getCurrentPosition();
+      if (position != null) {
+        setState(() {
+          _currentLocation = LatLng(position.latitude, position.longitude);
+        });
+        
+        // Move camera to current location
+        _moveToCurrentLocation();
+      }
+      
+      // Start updating location and fetching nearby users every 5 seconds
+      _startLocationUpdates(userId);
+    } else {
+      print('❌ Failed to start location services');
+      _showLocationPermissionDialog();
+    }
+  }
+
+  void _startLocationUpdates(String userId) {
+    _nearbyUsersTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
+      await _updateLocationAndFetchNearby(userId);
+    });
+  }
+
+  Future<void> _updateLocationAndFetchNearby(String userId) async {
+    try {
+      // Get current position
+      final position = await _locationService.getCurrentPosition();
+      if (position == null) return;
+
+      // Update current location
+      setState(() {
+        _currentLocation = LatLng(position.latitude, position.longitude);
+      });
+
+      // Update location on backend and get nearby users
+      final nearbyUsers = await _apiService.updateLocationAndGetNearby(
+        userId,
+        position.latitude,
+        position.longitude,
+      );
+      
+      // Get current user info from AuthProvider
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final currentUserName = authProvider.currentUser?.username ?? 'You';
+      
+      setState(() {
+        _markers.clear();
+        
+        // Add current user marker (blue)
+        _markers.add(
+          Marker(
+            markerId: MarkerId('current_user'),
+            position: _currentLocation!,
+            infoWindow: InfoWindow(
+              title: 'You ($currentUserName)',
+              snippet: 'Your current location',
+            ),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          ),
+        );
+        
+        // Add nearby users markers (red)
+        for (var user in nearbyUsers) {
+          final lat = user['latitude'] as double?;
+          final lng = user['longitude'] as double?;
+          
+          if (lat != null && lng != null) {
+            _markers.add(
+              Marker(
+                markerId: MarkerId(user['id'].toString()),
+                position: LatLng(lat, lng),
+                infoWindow: InfoWindow(
+                  title: user['username'] ?? 'Unknown User',
+                  snippet: '${user['distance_km']?.toStringAsFixed(2) ?? '0'} km away',
+                ),
+                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+                onTap: () => _onUserMarkerTapped(user),
+              ),
+            );
+          }
+        }
+      });
+      
+      print('📍 Updated location and found ${nearbyUsers.length} nearby users');
+    } catch (e) {
+      print('Error updating location and fetching nearby users: $e');
+    }
+  }
+  void _onUserMarkerTapped(Map<String, dynamic> user) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundImage: user['profile_picture_url'] != null 
+                ? NetworkImage(user['profile_picture_url']) 
+                : null,
+              child: user['profile_picture_url'] == null 
+                ? Icon(Icons.person, size: 30) 
+                : null,
+            ),
+            SizedBox(height: 12),
+            Text(
+              user['username'] ?? 'Unknown User',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              user['full_name'] ?? '',
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            SizedBox(height: 8),
+            Text('${user['distance_km']?.toStringAsFixed(2) ?? '0'} km away'),
+            if (user['city'] != null) 
+              Text('📍 ${user['city']}'),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // TODO: Navigate to user profile
+                    print('Navigate to profile: ${user['id']}');
+                  },
+                  icon: Icon(Icons.person),
+                  label: Text('View Profile'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // TODO: Navigate to chat
+                    print('Start chat with: ${user['id']}');
+                  },
+                  icon: Icon(Icons.chat),
+                  label: Text('Chat'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  void _moveToCurrentLocation() {
+    if (_currentLocation != null && mapController != null) {
+      mapController!.animateCamera(
+        CameraUpdate.newLatLngZoom(_currentLocation!, 14.0),
+      );
+    }
+  }
+
+  void _showLocationPermissionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Location Permission Required'),
+        content: Text('This app needs location permission to show nearby users on the map.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _initializeLocationServices();
+            },
+            child: Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+    if (_currentLocation != null) {
+      _moveToCurrentLocation();
+    }
   }
 
   void _goToCurrentLocation() {
-    mapController?.animateCamera(
-      CameraUpdate.newLatLngZoom(_center, 14.0),
-    );
+    _moveToCurrentLocation();
   }
 
   void _zoomIn() {
@@ -60,6 +297,23 @@ class _MapScreenState extends State<MapScreen> {
         ),
         title: Text('Map'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(
+              _locationService.isRunning ? Icons.location_on : Icons.location_off,
+              color: _locationService.isRunning ? Colors.green : Colors.red,
+            ),
+            onPressed: () {
+              if (_locationService.isRunning) {
+                _locationService.stopLocationUpdates();
+                _nearbyUsersTimer?.cancel();
+              } else {
+                _initializeLocationServices();
+              }
+              setState(() {});
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -86,21 +340,20 @@ class _MapScreenState extends State<MapScreen> {
                     GoogleMap(
                       onMapCreated: _onMapCreated,
                       initialCameraPosition: CameraPosition(
-                        target: _center,
+                        target: _currentLocation ?? _initialCenter,
                         zoom: 12.0,
                       ),
                       markers: _markers,
                       myLocationEnabled: true,
-                      myLocationButtonEnabled: false, // We'll use custom button
-                      zoomControlsEnabled: false, // We'll use custom controls
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
                     ),
 
                     Positioned(
                       left: 16,
                       top: 16,
                       right: 16,
-                      child: // Search Bar
-                          Container(
+                      child: Container(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -117,8 +370,7 @@ class _MapScreenState extends State<MapScreen> {
                           decoration: InputDecoration(
                             hintText: 'Search location',
                             border: InputBorder.none,
-                            prefixIcon:
-                                Icon(Icons.search, color: Colors.grey.shade500),
+                            prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
                             hintStyle: TextStyle(color: Colors.grey.shade500),
                             contentPadding: EdgeInsets.symmetric(vertical: 12),
                           ),
@@ -194,8 +446,7 @@ class _MapScreenState extends State<MapScreen> {
                                   ),
                                 ],
                               ),
-                              child:
-                                  Icon(Icons.my_location, color: Colors.black),
+                              child: Icon(Icons.my_location, color: Colors.black),
                             ),
                           ),
                         ],

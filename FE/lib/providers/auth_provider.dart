@@ -26,16 +26,28 @@ class AuthProvider with ChangeNotifier {
     _setLoading(false);
   }
 
-  // Login
+    // Login
   Future<AuthResult> login(LoginRequest request) async {
     _setLoading(true);
     
     try {
       final result = await _authService.login(request);
       
+      // ADD THESE DEBUG PRINTS
+      print('🔍 Login result debug:');
+      print('🔍 result.success: ${result.success}');
+      print('🔍 result.user: ${result.user}');
+      print('🔍 result.user?.id: ${result.user?.id}');
+      
       if (result.success) {
         _currentUser = result.user;
         _isLoggedIn = true;
+        
+        // ADD MORE DEBUG
+        print('🔍 AuthProvider after login:');
+        print('🔍 _currentUser: $_currentUser');
+        print('🔍 _currentUser?.id: ${_currentUser?.id}');
+        
         notifyListeners();
       }
       
