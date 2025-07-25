@@ -44,6 +44,7 @@ func SetupRoutes(
 			users.GET("", userHandler.GetAllUsers)
 			users.GET("/:id", userHandler.GetUser)
 			users.PUT("/:id", userHandler.UpdateUser)
+			users.PUT("/location/:id", userHandler.UpdateLocation)
 			users.DELETE("/:id", userHandler.DeleteUser)
 			users.POST("/:id/profile-picture", userHandler.UploadProfilePicture)
 		}

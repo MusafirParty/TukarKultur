@@ -39,3 +39,20 @@ type CreateUserRequest struct {
 	Country   *string        `json:"country,omitempty"`
 	Interests pq.StringArray `json:"interests,omitempty"`
 }
+
+type UpdateLocationRequest struct {
+	Latitude  float64 `json:"latitude"  binding:"required"`
+	Longitude float64 `json:"longitude" binding:"required"`
+}
+
+type NearbyUserResponse struct {
+	ID                uuid.UUID  `json:"id"`
+	Username          string     `json:"username"`
+	FullName          string     `json:"full_name"`
+	ProfilePictureURL *string    `json:"profile_picture_url,omitempty"`
+	City              *string    `json:"city,omitempty"`
+	Country           *string    `json:"country,omitempty"`
+	DistanceKm        float64    `json:"distance_km"`
+	UpdatedAt         time.Time  `json:"updated_at"`
+	LocationUpdatedAt *time.Time `json:"location_updated_at,omitempty"`
+}

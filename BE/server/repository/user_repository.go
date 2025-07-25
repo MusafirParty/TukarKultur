@@ -119,6 +119,19 @@ func (r *UserRepository) Update(user *models.User) error {
 	return err
 }
 
+func (r *UserRepository) UpdateLocation(id *uuid.UUID, latitude *float64, longitude *float64) error {
+	query := `
+        UPDATE users 
+        SET latitude = $2, 
+            longitude = $3, 
+            location_updated_at = $4, 
+            updated_at = $4
+        WHERE id = $1`
+
+	now := time.Now()
+	_, err := r.db.Exec(query, id, latitude, longitude, now)
+	return err
+}
 func (r *UserRepository) Delete(id uuid.UUID) error {
 	query := `DELETE FROM users WHERE id = $1`
 	_, err := r.db.Exec(query, id)
