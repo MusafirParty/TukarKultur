@@ -1082,3 +1082,16 @@ Method: Multipart form-data upload
 Field: meetup_photo (file)
 Storage: Cloudinary meetups folder
 Database: Updates meetup_photo_url and meetup_photo_public_id in interactions table
+
+# Send friend request
+curl -X POST http://localhost:8080/api/v1/friend-requests \
+  -H "Content-Type: application/json" \
+  -d '{"requester_id": "uuid1", "recipient_id": "uuid2"}'
+
+# Respond to friend request  
+curl -X PUT http://localhost:8080/api/v1/friend-requests/request-uuid \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "uuid2", "status": "accepted"}'
+
+# Get received requests
+curl "http://localhost:8080/api/v1/friend-requests/received?user_id=uuid2"
