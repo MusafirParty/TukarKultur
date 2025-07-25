@@ -1,0 +1,1 @@
+ /home/kyomoto/TukarKultur/tukarkultur/.dart_tool/flutter_build/189a7caf9803a7f81998216a46505feb/native_assets.json: 

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class RankingsScreen extends StatelessWidget {
@@ -6,8 +7,10 @@ class RankingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
+          icon: Icon(CupertinoIcons.arrow_left, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         title: Text('Rankings'),
         centerTitle: true,
@@ -46,7 +49,7 @@ class RankingsScreen extends StatelessWidget {
             
             // All Users Section
             Text(
-              'All Users',
+              'Your Friends',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,

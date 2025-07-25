@@ -41,10 +41,6 @@ class ProfileScreen extends StatelessWidget {
           appBar: AppBar(
             backgroundColor: Color(0xFFFCFAF7),
             elevation: 0,
-            leading: IconButton(
-              icon: Icon(CupertinoIcons.arrow_left, color: Colors.black),
-              onPressed: () => Navigator.pop(context),
-            ),
             title: Text(
               'Profile',
               style: TextStyle(
@@ -54,17 +50,6 @@ class ProfileScreen extends StatelessWidget {
                   height: 1.27),
             ),
             centerTitle: true,
-            actions: [
-              IconButton(
-                icon: Icon(Icons.edit_outlined, color: Colors.black),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => EditProfileScreen()),
-                  );
-                },
-              ),
-            ],
           ),
           body: SingleChildScrollView(
             padding: EdgeInsets.all(20),

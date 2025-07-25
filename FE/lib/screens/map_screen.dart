@@ -291,10 +291,6 @@ Future<void> _initializeLocationServices() async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: Colors.black),
-          onPressed: () {},
-        ),
         title: Text('Map'),
         centerTitle: true,
         actions: [

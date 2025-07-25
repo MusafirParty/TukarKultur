@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/chat_models.dart';
 import '../services/simple_chat_service.dart';
 import '../services/api_service.dart';
+import 'chat_feedback_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   final String chatPartnerId;
@@ -25,7 +26,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final SimpleChatService _chatService = SimpleChatService();
   final ScrollController _scrollController = ScrollController();
   final ApiService _apiService = ApiService();
-  
+
   List<ChatMessage> _messages = [];
   bool _isConnecting = true;
   bool _isTyping = false;
@@ -39,46 +40,56 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _addCulturalWelcomeMessage() async {
     print('🔍 DEBUG: Starting _addCulturalWelcomeMessage');
-    
-    _addLocalMessage(ChatMessage(
-      sender: 'AI Assistant',
-      receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
-      text: '🤖 Welcome! Let me share some cultural insights about ${widget.chatPartnerName}...',
-      timestamp: DateTime.now(),
-      isMe: false,
-    ));
+
+    _addLocalMessage(
+      ChatMessage(
+        sender: 'AI Assistant',
+        receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
+        text:
+            '🤖 Welcome! Let me share some cultural insights about ${widget.chatPartnerName}...',
+        timestamp: DateTime.now(),
+        isMe: false,
+      ),
+    );
 
     try {
       print('🔍 DEBUG: About to call _getCulturalInsight');
       final culturalInsight = await _getCulturalInsight();
-      print('🔍 DEBUG: Cultural insight result length: ${culturalInsight.length}');
+      print(
+        '🔍 DEBUG: Cultural insight result length: ${culturalInsight.length}',
+      );
       print('🔍 DEBUG: Cultural insight content: "$culturalInsight"');
-      
-      _addLocalMessage(ChatMessage(
-        sender: 'AI Assistant',
-        receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        text: culturalInsight,
-        timestamp: DateTime.now(),
-        isMe: false,
-      ));
 
+      _addLocalMessage(
+        ChatMessage(
+          sender: 'AI Assistant',
+          receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
+          text: culturalInsight,
+          timestamp: DateTime.now(),
+          isMe: false,
+        ),
+      );
     } catch (e, stackTrace) {
       print('🚨 ERROR in _addCulturalWelcomeMessage: $e');
       print('🚨 Stack trace: $stackTrace');
-      _addLocalMessage(ChatMessage(
-        sender: 'AI Assistant',
-        receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        text: '🌍 ${widget.chatPartnerName} is interested in cultural exchange! Here are some great conversation topics:\n\n• Ask about their local food traditions\n• Share your favorite cultural festivals\n• Discuss music from your regions\n• Exchange language learning tips\n• Talk about traditional arts and crafts',
-        timestamp: DateTime.now(),
-        isMe: false,
-      ));
+      _addLocalMessage(
+        ChatMessage(
+          sender: 'AI Assistant',
+          receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
+          text:
+              '🌍 ${widget.chatPartnerName} is interested in cultural exchange! Here are some great conversation topics:\n\n• Ask about their local food traditions\n• Share your favorite cultural festivals\n• Discuss music from your regions\n• Exchange language learning tips\n• Talk about traditional arts and crafts',
+          timestamp: DateTime.now(),
+          isMe: false,
+        ),
+      );
     }
   }
 
   Future<String> _getCulturalInsight() async {
     print('🔍 DEBUG: Entering _getCulturalInsight');
-    
-    final culturalPrompt = '''
+
+    final culturalPrompt =
+        '''
 Based on the name "${widget.chatPartnerName}", provide cultural insights and interesting facts about their likely cultural background. Include:
 
 1. Possible cultural traditions
@@ -96,24 +107,28 @@ If the name doesn't clearly indicate a specific culture, provide general tips fo
       print('🔍 DEBUG: Creating AIRequest');
       final aiRequest = AIRequest(
         prompt: culturalPrompt,
-        context: 'TukarKultur cultural exchange platform - helping users connect across cultures',
-        metadata: {'type': 'cultural_insight', 'partner_name': widget.chatPartnerName},
+        context:
+            'TukarKultur cultural exchange platform - helping users connect across cultures',
+        metadata: {
+          'type': 'cultural_insight',
+          'partner_name': widget.chatPartnerName,
+        },
       );
       print('🔍 DEBUG: AIRequest created successfully');
-      
+
       print('🔍 DEBUG: Calling _apiService.generateWithOpenAI');
       final response = await _apiService.generateWithOpenAI(aiRequest);
       print('🔍 DEBUG: API call completed');
       print('🔍 DEBUG: Response object: $response');
-      
+
       if (response == null) {
         print('🚨 ERROR: Response is null - using fallback');
         return _getFallbackCulturalInsight();
       }
-      
+
       print('🔍 DEBUG: Response.response field: "${response.response}"');
       print('🔍 DEBUG: Response.response length: ${response.response.length}');
-      
+
       if (response.response.isEmpty) {
         print('🚨 ERROR: Response.response is empty - using fallback');
         return _getFallbackCulturalInsight();
@@ -121,7 +136,6 @@ If the name doesn't clearly indicate a specific culture, provide general tips fo
 
       print('🔍 DEBUG: Returning successful response');
       return response.response;
-      
     } catch (e, stackTrace) {
       print('🚨 ERROR: Exception in _getCulturalInsight: $e');
       print('🚨 Stack trace: $stackTrace');
@@ -130,7 +144,8 @@ If the name doesn't clearly indicate a specific culture, provide general tips fo
   }
 
   Future<String> _getConversationStarter() async {
-    final starterPrompt = '''
+    final starterPrompt =
+        '''
 Suggest 3-4 engaging conversation starters for someone wanting to chat with ${widget.chatPartnerName} for cultural exchange. Make them:
 
 1. Respectful and culturally sensitive
@@ -142,11 +157,16 @@ Format as a numbered list with brief explanations.
 ''';
 
     try {
-      final response = await _apiService.generateWithOpenAI(AIRequest(
-        prompt: starterPrompt,
-        context: 'TukarKultur cultural exchange conversation starters',
-        metadata: {'type': 'conversation_starter', 'partner_name': widget.chatPartnerName},
-      ));
+      final response = await _apiService.generateWithOpenAI(
+        AIRequest(
+          prompt: starterPrompt,
+          context: 'TukarKultur cultural exchange conversation starters',
+          metadata: {
+            'type': 'conversation_starter',
+            'partner_name': widget.chatPartnerName,
+          },
+        ),
+      );
 
       return response?.response ?? _getFallbackConversationStarters();
     } catch (e) {
@@ -202,9 +222,14 @@ Every culture has unique stories, foods, festivals, and perspectives to share. B
         // Merge WebSocket messages with local AI messages
         setState(() {
           // Keep AI messages and add WebSocket messages
-          final aiMessages = _messages.where((msg) => msg.sender == 'AI Assistant').toList();
-          final wsMessages = webSocketMessages.where((msg) => msg.sender != 'AI Assistant').toList();
-          _messages = [...aiMessages, ...wsMessages]..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+          final aiMessages = _messages
+              .where((msg) => msg.sender == 'AI Assistant')
+              .toList();
+          final wsMessages = webSocketMessages
+              .where((msg) => msg.sender != 'AI Assistant')
+              .toList();
+          _messages = [...aiMessages, ...wsMessages]
+            ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
           _isConnecting = false;
         });
         _scrollToBottom();
@@ -212,13 +237,16 @@ Every culture has unique stories, foods, festivals, and perspectives to share. B
 
       // Add connection success message
       await Future.delayed(Duration(seconds: 2));
-      _addLocalMessage(ChatMessage(
-        sender: 'System',
-        receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        text: '✅ Chat connected! You can now send messages to ${widget.chatPartnerName}.',
-        timestamp: DateTime.now(),
-        isMe: false,
-      ));
+      _addLocalMessage(
+        ChatMessage(
+          sender: 'System',
+          receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
+          text:
+              '✅ Chat connected! You can now send messages to ${widget.chatPartnerName}.',
+          timestamp: DateTime.now(),
+          isMe: false,
+        ),
+      );
     } else {
       setState(() {
         _isConnecting = false;
@@ -268,13 +296,15 @@ Every culture has unique stories, foods, festivals, and perspectives to share. B
 
     // If WebSocket fails, add as local message
     if (!success) {
-      _addLocalMessage(ChatMessage(
-        sender: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        receiver: widget.chatPartnerId, // Fixed: was chatPartnererId
-        text: messageText,
-        timestamp: DateTime.now(),
-        isMe: true,
-      ));
+      _addLocalMessage(
+        ChatMessage(
+          sender: 'user_${DateTime.now().millisecondsSinceEpoch}',
+          receiver: widget.chatPartnerId, // Fixed: was chatPartnererId
+          text: messageText,
+          timestamp: DateTime.now(),
+          isMe: true,
+        ),
+      );
 
       // Try to get an AI response to the message
       _tryAIResponse(messageText);
@@ -287,31 +317,50 @@ Every culture has unique stories, foods, festivals, and perspectives to share. B
 
   Future<void> _tryAIResponse(String userMessage) async {
     try {
-      final aiPrompt = '''
+      final aiPrompt =
+          '''
 The user said: "$userMessage"
 
 Respond as a helpful cultural exchange assistant. If they're asking about culture, provide insights. If they're being conversational, respond encouragingly and suggest cultural topics. Keep responses concise and engaging.
 ''';
 
-      final response = await _apiService.generateWithOpenAI(AIRequest(
-        prompt: aiPrompt,
-        context: 'TukarKultur cultural exchange assistant responding to user message',
-        metadata: {'type': 'chat_response', 'user_message': userMessage},
-      ));
+      final response = await _apiService.generateWithOpenAI(
+        AIRequest(
+          prompt: aiPrompt,
+          context:
+              'TukarKultur cultural exchange assistant responding to user message',
+          metadata: {'type': 'chat_response', 'user_message': userMessage},
+        ),
+      );
 
       if (response != null) {
         await Future.delayed(Duration(seconds: 1));
-        _addLocalMessage(ChatMessage(
-          sender: 'AI Assistant',
-          receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
-          text: '🤖 ${response.response}',
-          timestamp: DateTime.now(),
-          isMe: false,
-        ));
+        _addLocalMessage(
+          ChatMessage(
+            sender: 'AI Assistant',
+            receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
+            text: '🤖 ${response.response}',
+            timestamp: DateTime.now(),
+            isMe: false,
+          ),
+        );
       }
     } catch (e) {
       print('AI response failed: $e');
     }
+  }
+
+  void _onCloseChat(BuildContext context) {
+    // Navigate to feedback screen instead of directly going back
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatFeedbackScreen(
+          chatPartnerName: widget.chatPartnerName,
+          chatPartnerId: widget.chatPartnerId,
+        ),
+      ),
+    );
   }
 
   @override
@@ -324,101 +373,104 @@ Respond as a helpful cultural exchange assistant. If they're asking about cultur
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(CupertinoIcons.arrow_left, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Column(
-          children: [
-            Text(
-              widget.chatPartnerName,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-            if (widget.chatPartnerDistance != null)
+    return WillPopScope(
+      onWillPop: () async {
+        _onCloseChat(context);
+        return false; // Prevent default back action
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(CupertinoIcons.arrow_left, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Column(
+            children: [
               Text(
-                widget.chatPartnerDistance!,
+                widget.chatPartnerName,
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
                 ),
               ),
+              if (widget.chatPartnerDistance != null)
+                Text(
+                  widget.chatPartnerDistance!,
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+            ],
+          ),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.more_vert, color: Colors.black),
+              onPressed: () => _showChatOptions(),
+            ),
           ],
         ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: Colors.black),
-            onPressed: () => _showChatOptions(),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return Padding(
-                  padding: EdgeInsets.only(bottom: 16),
-                  child: _buildMessage(message),
-                );
-              },
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: EdgeInsets.all(16),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final message = _messages[index];
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: _buildMessage(message),
+                  );
+                },
+              ),
             ),
-          ),
-          if (_isTyping)
+            if (_isTyping)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    CircularProgressIndicator(strokeWidth: 2),
+                    SizedBox(width: 8),
+                    Text('Sending...', style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.all(16),
               child: Row(
                 children: [
-                  CircularProgressIndicator(strokeWidth: 2),
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: TextField(
+                        controller: _messageController,
+                        decoration: InputDecoration(
+                          hintText: 'Type a message',
+                          border: InputBorder.none,
+                          hintStyle: TextStyle(color: Colors.grey.shade500),
+                        ),
+                        onSubmitted: (_) => _sendMessage(),
+                        textInputAction: TextInputAction.send,
+                      ),
+                    ),
+                  ),
                   SizedBox(width: 8),
-                  Text('Sending...', style: TextStyle(color: Colors.grey)),
+                  IconButton(
+                    onPressed: _sendMessage,
+                    icon: Icon(Icons.send, color: Colors.black),
+                  ),
                 ],
               ),
             ),
-          Container(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: InputDecoration(
-                        hintText: 'Type a message',
-                        border: InputBorder.none,
-                        hintStyle: TextStyle(color: Colors.grey.shade500),
-                      ),
-                      onSubmitted: (_) => _sendMessage(),
-                      textInputAction: TextInputAction.send,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8),
-                IconButton(
-                  onPressed: _sendMessage,
-                  icon: Icon(Icons.send, color: Colors.black),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      ), // End of WillPopScope child (Scaffold)
+    ); // End of WillPopScope
   }
 
   void _showChatOptions() {
@@ -429,7 +481,10 @@ Respond as a helpful cultural exchange assistant. If they're asking about cultur
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Chat Options', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              'Chat Options',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 16),
             ListTile(
               leading: Icon(Icons.psychology),
@@ -459,8 +514,7 @@ Respond as a helpful cultural exchange assistant. If they're asking about cultur
               leading: Icon(Icons.block),
               title: Text('End Chat'),
               onTap: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
+                _onCloseChat(context);
               },
             ),
           ],
@@ -470,29 +524,34 @@ Respond as a helpful cultural exchange assistant. If they're asking about cultur
   }
 
   void _askForMoreCulturalTips() async {
-    _addLocalMessage(ChatMessage(
-      sender: 'AI Assistant',
-      receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
-      text: '🤖 Getting more cultural insights for your conversation...',
-      timestamp: DateTime.now(),
-      isMe: false,
-    ));
+    _addLocalMessage(
+      ChatMessage(
+        sender: 'AI Assistant',
+        receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
+        text: '🤖 Getting more cultural insights for your conversation...',
+        timestamp: DateTime.now(),
+        isMe: false,
+      ),
+    );
 
     final tips = await _getCulturalInsight();
-    _addLocalMessage(ChatMessage(
-      sender: 'AI Assistant',
-      receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
-      text: tips,
-      timestamp: DateTime.now(),
-      isMe: false,
-    ));
+    _addLocalMessage(
+      ChatMessage(
+        sender: 'AI Assistant',
+        receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
+        text: tips,
+        timestamp: DateTime.now(),
+        isMe: false,
+      ),
+    );
   }
 
   void _askForLanguageHelp() async {
-    _addLocalMessage(ChatMessage(
-      sender: 'AI Assistant',
-      receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
-      text: '''
+    _addLocalMessage(
+      ChatMessage(
+        sender: 'AI Assistant',
+        receiver: 'user_${DateTime.now().millisecondsSinceEpoch}',
+        text: '''
 🗣️ Language Exchange Tips:
 
 • Start with simple greetings in each other's languages
@@ -505,16 +564,17 @@ Respond as a helpful cultural exchange assistant. If they're asking about cultur
 
 Remember: Making mistakes is part of learning! 😊
 ''',
-      timestamp: DateTime.now(),
-      isMe: false,
-    ));
+        timestamp: DateTime.now(),
+        isMe: false,
+      ),
+    );
   }
 
   Widget _buildMessage(ChatMessage message) {
     final isSystem = message.sender == 'System';
     final isAI = message.sender == 'AI Assistant';
     final isMe = message.isMe && !isSystem && !isAI;
-    
+
     if (isSystem) {
       return Center(
         child: Container(
@@ -571,7 +631,7 @@ Remember: Making mistakes is part of learning! 😊
         ),
       );
     }
-    
+
     return Row(
       mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -599,17 +659,16 @@ Remember: Making mistakes is part of learning! 😊
         ],
         Flexible(
           child: Column(
-            crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isMe
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               if (!isMe)
                 Padding(
                   padding: EdgeInsets.only(bottom: 4),
                   child: Text(
                     message.sender,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
                 ),
               Container(
@@ -620,20 +679,14 @@ Remember: Making mistakes is part of learning! 😊
                 ),
                 child: Text(
                   message.text,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.black, fontSize: 14),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.only(top: 4),
                 child: Text(
                   _formatTimestamp(message.timestamp),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey.shade500,
-                  ),
+                  style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
                 ),
               ),
             ],
@@ -667,7 +720,7 @@ Remember: Making mistakes is part of learning! 😊
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
-    
+
     if (difference.inMinutes < 1) {
       return 'Just now';
     } else if (difference.inHours < 1) {
