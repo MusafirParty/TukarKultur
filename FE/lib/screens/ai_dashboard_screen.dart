@@ -6,7 +6,8 @@ class AIDashboardScreen extends StatefulWidget {
   _AIDashboardScreenState createState() => _AIDashboardScreenState();
 }
 
-class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProviderStateMixin {
+class _AIDashboardScreenState extends State<AIDashboardScreen>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -65,24 +66,24 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
             children: [
               // AI Status Header
               _buildAIStatusHeader(),
-              
+
               SizedBox(height: 20),
-              
+
               // Cultural Learning Gamification
               _buildCulturalLearningGamification(),
-              
+
               SizedBox(height: 20),
-              
+
               // AI Features Grid
               _buildAIFeaturesGrid(),
-              
+
               SizedBox(height: 20),
-              
+
               // Real-time Cultural Insights
               _buildRealTimeCulturalInsights(),
-              
+
               SizedBox(height: 20),
-              
+
               // AI Performance Analytics
               _buildAIPerformanceAnalytics(),
             ],
@@ -121,10 +122,7 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
             spreadRadius: 1,
           ),
         ],
-        border: Border.all(
-          color: Colors.white.withOpacity(0.15),
-          width: 1.5,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.15), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +133,11 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
                 padding: EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xff6366f1), Color(0xff8b5cf6), Color(0xffa855f7)],
+                    colors: [
+                      Color(0xff6366f1),
+                      Color(0xff8b5cf6),
+                      Color(0xffa855f7),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -244,9 +246,17 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildAIMetric('2,847', 'Interactions\nAnalyzed'),
-                Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.white.withOpacity(0.3),
+                ),
                 _buildAIMetric('97%', 'Cultural\nAccuracy'),
-                Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.white.withOpacity(0.3),
+                ),
                 _buildAIMetric('15', 'Languages\nSupported'),
               ],
             ),
@@ -305,10 +315,7 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
             spreadRadius: 1,
           ),
         ],
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1.5,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,7 +326,10 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.white.withOpacity(0.3), Colors.white.withOpacity(0.15)],
+                    colors: [
+                      Colors.white.withOpacity(0.3),
+                      Colors.white.withOpacity(0.15),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -410,7 +420,10 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.white.withOpacity(0.3), Colors.white.withOpacity(0.1)],
+                    colors: [
+                      Colors.white.withOpacity(0.3),
+                      Colors.white.withOpacity(0.1),
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.white.withOpacity(0.4)),
@@ -493,7 +506,10 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
       padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.white.withOpacity(0.25), Colors.white.withOpacity(0.15)],
+          colors: [
+            Colors.white.withOpacity(0.25),
+            Colors.white.withOpacity(0.15),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -584,7 +600,12 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
     );
   }
 
-  Widget _buildFeatureCard(String emoji, String title, String description, List<Color> gradientColors) {
+  Widget _buildFeatureCard(
+    String emoji,
+    String title,
+    String description,
+    List<Color> gradientColors,
+  ) {
     return Container(
       padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -607,28 +628,24 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
             spreadRadius: 1,
           ),
         ],
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: Colors.white.withOpacity(0.3)),
             ),
-            child: Text(emoji, style: TextStyle(fontSize: 32)),
+            child: Text(emoji, style: TextStyle(fontSize: 28)),
           ),
-          SizedBox(height: 12),
           Text(
             title,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
               color: Colors.white,
               shadows: [
@@ -679,10 +696,7 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
             spreadRadius: 1,
           ),
         ],
-        border: Border.all(
-          color: Color(0xff6366f1).withOpacity(0.1),
-          width: 1,
-        ),
+        border: Border.all(color: Color(0xff6366f1).withOpacity(0.1), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -720,15 +734,35 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
             ],
           ),
           SizedBox(height: 16),
-          _buildInsightItem('🇯🇵', 'Japanese Etiquette', 'Bowing depth matters', '2 mins ago'),
-          _buildInsightItem('🇮🇳', 'Indian Traditions', 'Namaste vs handshake', '5 mins ago'),
-          _buildInsightItem('🇫🇷', 'French Customs', 'Greeting with kisses', '8 mins ago'),
+          _buildInsightItem(
+            '🇯🇵',
+            'Japanese Etiquette',
+            'Bowing depth matters',
+            '2 mins ago',
+          ),
+          _buildInsightItem(
+            '🇮🇳',
+            'Indian Traditions',
+            'Namaste vs handshake',
+            '5 mins ago',
+          ),
+          _buildInsightItem(
+            '🇫🇷',
+            'French Customs',
+            'Greeting with kisses',
+            '8 mins ago',
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInsightItem(String flag, String culture, String insight, String time) {
+  Widget _buildInsightItem(
+    String flag,
+    String culture,
+    String insight,
+    String time,
+  ) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8),
       child: Container(
@@ -836,10 +870,7 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
             spreadRadius: 1,
           ),
         ],
-        border: Border.all(
-          color: Colors.white.withOpacity(0.15),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -895,9 +926,17 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildAnalyticsMetric('98.5%', 'Accuracy'),
-                Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.white.withOpacity(0.3),
+                ),
                 _buildAnalyticsMetric('0.2s', 'Response Time'),
-                Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.white.withOpacity(0.3),
+                ),
                 _buildAnalyticsMetric('24/7', 'Availability'),
               ],
             ),
@@ -921,10 +960,7 @@ class _AIDashboardScreenState extends State<AIDashboardScreen> with TickerProvid
         SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.white.withOpacity(0.7),
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7)),
         ),
       ],
     );

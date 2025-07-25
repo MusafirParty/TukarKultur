@@ -3,10 +3,8 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/map_screen.dart';
-import 'screens/chat_list_screen.dart';
 import 'screens/notes_screen.dart';
 import 'screens/profile_screen.dart';
-import 'screens/rankings_screen.dart';
 import 'screens/login_screen.dart';
 
 void main() => runApp(MyApp());
@@ -105,7 +103,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
                   ),
                   SizedBox(height: 32),
                   CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF9C854A)),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFF9C854A),
+                    ),
                   ),
                 ],
               ),
@@ -135,7 +135,6 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _pages = [
     HomeScreen(),
     MapScreen(),
-    ChatListScreen(),
     NotesScreen(),
     ProfileScreen(),
   ];
@@ -162,14 +161,8 @@ class _MainNavigationState extends State<MainNavigation> {
               'Map',
               1,
             ),
-            _buildNavItem(
-              Icons.chat_bubble_outline,
-              Icons.chat_bubble,
-              'Chat',
-              2,
-            ),
-            _buildNavItem(Icons.note_outlined, Icons.note, 'Notes', 3),
-            _buildNavItem(Icons.person_outline, Icons.person, 'Profile', 4),
+            _buildNavItem(Icons.note_outlined, Icons.note, 'Notes', 2),
+            _buildNavItem(Icons.person_outline, Icons.person, 'Profile', 3),
           ],
         ),
       ),

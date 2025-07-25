@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'rankings_screen.dart';
 import 'user_profile_screen.dart';
 import 'memories_screen.dart';
@@ -7,6 +9,22 @@ import 'ai_dashboard_screen.dart';
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        final user = authProvider.currentUser;
+        
+        // Get the first name from full name, or use 'User' as fallback
+        String firstName = 'User';
+        if (user != null && user.fullName.isNotEmpty) {
+          firstName = user.fullName.split(' ').first;
+        }
+
+        return _buildScaffold(context, firstName);
+      },
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, String firstName) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Home',
@@ -30,7 +48,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             // Welcome Message
             Text(
-              'Welcome back, Ryan',
+              'Welcome back, $firstName',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

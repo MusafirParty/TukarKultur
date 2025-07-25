@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/auth_models.dart';
 import '../providers/auth_provider.dart';
-import 'chat_list_screen.dart';
+import 'home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -86,7 +86,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (result.success) {
         if (mounted) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => ChatListScreen()),
+            MaterialPageRoute(builder: (context) => HomeScreen()),
           );
         }
       } else {
