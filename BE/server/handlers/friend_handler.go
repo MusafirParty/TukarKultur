@@ -22,8 +22,17 @@ func NewFriendHandler(friendRepo *repository.FriendRepository, userRepo *reposit
 }
 
 func (h *FriendHandler) GetAllFriends(c *gin.Context) {
-	// Temporary: use a hardcoded user ID for testing
-	userID := uuid.MustParse("550e8400-e29b-41d4-a716-446655440001")
+	userIDStr := c.Query("user_id")
+	if userIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id parameter is required"})
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
 
 	friends, err := h.friendRepo.GetFriendsByUserID(userID)
 	if err != nil {
@@ -77,16 +86,17 @@ func (h *FriendHandler) DeleteFriend(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Friendship deleted successfully"})
 }
 
-// New friend request methods
+// Simplified friend request methods
 func (h *FriendHandler) SendFriendRequest(c *gin.Context) {
-	var req models.SendFriendRequestRequest
+	var req struct {
+		RequesterID uuid.UUID `json:"requester_id" binding:"required"`
+		RecipientID uuid.UUID `json:"recipient_id" binding:"required"`
+	}
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Get requester ID from auth context (you'll need to implement this)
-	requesterID := uuid.New() // Replace with actual auth user ID
 
 	// Check if recipient exists
 	_, err := h.userRepo.GetByID(req.RecipientID)
@@ -96,13 +106,13 @@ func (h *FriendHandler) SendFriendRequest(c *gin.Context) {
 	}
 
 	// Check if users are the same
-	if requesterID == req.RecipientID {
+	if req.RequesterID == req.RecipientID {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send friend request to yourself"})
 		return
 	}
 
 	// Check if already friends
-	areFriends, err := h.friendRepo.AreFriends(requesterID, req.RecipientID)
+	areFriends, err := h.friendRepo.AreFriends(req.RequesterID, req.RecipientID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check friendship status"})
 		return
@@ -113,7 +123,7 @@ func (h *FriendHandler) SendFriendRequest(c *gin.Context) {
 	}
 
 	// Check if friend request already exists
-	existingRequest, err := h.friendRepo.GetFriendRequestByUsers(requesterID, req.RecipientID)
+	existingRequest, err := h.friendRepo.GetFriendRequestByUsers(req.RequesterID, req.RecipientID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing requests"})
 		return
@@ -126,7 +136,7 @@ func (h *FriendHandler) SendFriendRequest(c *gin.Context) {
 	// Create new friend request
 	friendRequest := &models.FriendRequest{
 		ID:          uuid.New(),
-		RequesterID: requesterID,
+		RequesterID: req.RequesterID,
 		RecipientID: req.RecipientID,
 		Status:      models.FriendRequestStatusPending,
 	}
@@ -147,14 +157,15 @@ func (h *FriendHandler) RespondToFriendRequest(c *gin.Context) {
 		return
 	}
 
-	var req models.RespondFriendRequestRequest
+	var req struct {
+		UserID uuid.UUID `json:"user_id" binding:"required"`
+		Status string    `json:"status" binding:"required,oneof=accepted rejected"`
+	}
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Get user ID from auth context
-	userID := uuid.New() // Replace with actual auth user ID
 
 	// Get friend request
 	friendRequest, err := h.friendRepo.GetFriendRequestByID(id)
@@ -164,7 +175,7 @@ func (h *FriendHandler) RespondToFriendRequest(c *gin.Context) {
 	}
 
 	// Check if user is the recipient
-	if friendRequest.RecipientID != userID {
+	if friendRequest.RecipientID != req.UserID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to respond to this request"})
 		return
 	}
@@ -200,7 +211,17 @@ func (h *FriendHandler) RespondToFriendRequest(c *gin.Context) {
 }
 
 func (h *FriendHandler) GetReceivedFriendRequests(c *gin.Context) {
-	userID := uuid.New() // Replace with actual auth user ID
+	userIDStr := c.Query("user_id")
+	if userIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id parameter is required"})
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
 
 	requests, err := h.friendRepo.GetPendingFriendRequests(userID)
 	if err != nil {
@@ -212,7 +233,17 @@ func (h *FriendHandler) GetReceivedFriendRequests(c *gin.Context) {
 }
 
 func (h *FriendHandler) GetSentFriendRequests(c *gin.Context) {
-	userID := uuid.New() // Replace with actual auth user ID
+	userIDStr := c.Query("user_id")
+	if userIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id parameter is required"})
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
 
 	requests, err := h.friendRepo.GetSentFriendRequests(userID)
 	if err != nil {
