@@ -95,10 +95,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Logo/Title
                 Column(
                   children: [
-                    Icon(
-                      Icons.language,
-                      size: 80,
-                      color: Theme.of(context).primaryColor,
+                    Container(
+                      width: 200,
+                      height: 100,
+                      child: ClipRRect(
+                        child: Image.asset(
+                          'assets/img/Logo-TukarKultur.jpg',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
