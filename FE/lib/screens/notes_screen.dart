@@ -14,12 +14,6 @@ class _NotesScreenState extends State<NotesScreen> {
       appBar: AppBar(
         title: Text('Notes'),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.camera_alt_outlined, color: Colors.black),
-            onPressed: () => _showAddPhotoDialog(context),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(

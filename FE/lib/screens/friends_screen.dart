@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class RankingsScreen extends StatelessWidget {
+class FriendsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -12,7 +12,7 @@ class RankingsScreen extends StatelessWidget {
             Navigator.pop(context);
           },
         ),
-        title: Text('Rankings'),
+        title: Text('Friends'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -20,43 +20,6 @@ class RankingsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Users Section
-            Text(
-              'Top Users',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 16),
-            _buildRankingItem(
-              'Sophia Bennett',
-              '120 interactions · 4.9 rating',
-              true,
-            ),
-            _buildRankingItem(
-              'Ethan Carter',
-              '115 interactions · 4.8 rating',
-              true,
-            ),
-            _buildRankingItem(
-              'Olivia Davis',
-              '110 interactions · 4.7 rating',
-              true,
-            ),
-            SizedBox(height: 32),
-            
-            // All Users Section
-            Text(
-              'Your Friends',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 16),
             _buildRankingItem(
               'Noah Evans',
               '105 interactions · 4.6 rating',
@@ -65,7 +28,7 @@ class RankingsScreen extends StatelessWidget {
             _buildRankingItem(
               'Ava Foster',
               '100 interactions · 4.5 rating',
-              false,
+              true,
             ),
             _buildRankingItem(
               'Liam Gray',

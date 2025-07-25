@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'rankings_screen.dart';
+import 'friends_screen.dart';
 import 'user_profile_screen.dart';
 import 'memories_screen.dart';
 import 'ai_dashboard_screen.dart';
@@ -33,13 +34,7 @@ class HomeScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
                 height: 1.27)),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings_outlined, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
+        centerTitle: true
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
@@ -163,7 +158,10 @@ class HomeScreen extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    // Navigate to friends screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FriendsScreen()),
+                    );
                   },
                   child: Text(
                     'See All',
