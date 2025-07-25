@@ -205,7 +205,7 @@ class _NotesScreenState extends State<NotesScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Color(0xFFD4A574).withOpacity(0.2),
+                color: Color(0xFFD4A574).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(

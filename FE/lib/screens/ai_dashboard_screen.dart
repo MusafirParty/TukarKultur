@@ -100,10 +100,10 @@ class _AIDashboardScreenState extends State<AIDashboardScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(0xff0f172a),
-            Color(0xff1e293b),
-            Color(0xff334155),
-            Color(0xff475569),
+            Color(0xFF6F6030),
+            Color(0xFF7F6D39),
+            Color(0xFF8F7A42),
+            Color(0xFF9C854A),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -111,7 +111,7 @@ class _AIDashboardScreenState extends State<AIDashboardScreen>
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Color(0xff0f172a).withOpacity(0.4),
+            color: Color(0xFF6F6030).withOpacity(0.4),
             blurRadius: 30,
             offset: Offset(0, 15),
           ),
@@ -297,14 +297,14 @@ class _AIDashboardScreenState extends State<AIDashboardScreen>
       padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xff059669), Color(0xff10b981), Color(0xff34d399)],
+          colors: [Color(0xFFD4A574), Color(0xFFE8C4A0), Color(0xFFCAB57A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Color(0xff059669).withOpacity(0.3),
+            color: Color(0xFFD4A574).withOpacity(0.3),
             blurRadius: 25,
             offset: Offset(0, 12),
           ),
@@ -574,25 +574,25 @@ class _AIDashboardScreenState extends State<AIDashboardScreen>
               '🧬',
               'Cultural DNA\nScanner',
               'Analyze cultural compatibility',
-              [Color(0xff6366f1), Color(0xff8b5cf6)],
+              [Color(0xFF9C854A), Color(0xFFBFA55E)],
             ),
             _buildFeatureCard(
               '🌉',
               'Bridge\nBuilder',
               'Connect across cultures',
-              [Color(0xff10b981), Color(0xff059669)],
+              [Color(0xFFCAB57A), Color(0xFFD4A574)],
             ),
             _buildFeatureCard(
               '⚠️',
               'Clash\nPredictor',
               'Prevent misunderstandings',
-              [Color(0xffef4444), Color(0xfff97316)],
+              [Color(0xFF8F7A42), Color(0xFF9C854A)],
             ),
             _buildFeatureCard(
               '🎯',
               'Moment\nDetector',
               'Perfect timing insights',
-              [Color(0xff8b5cf6), Color(0xff3b82f6)],
+              [Color(0xFFBFA55E), Color(0xFFE8C4A0)],
             ),
           ],
         ),
@@ -707,14 +707,14 @@ class _AIDashboardScreenState extends State<AIDashboardScreen>
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xff6366f1), Color(0xff8b5cf6)],
+                    colors: [Color(0xFF9C854A), Color(0xFFBFA55E)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xff6366f1).withOpacity(0.3),
+                      color: Color(0xFF9C854A).withOpacity(0.3),
                       blurRadius: 12,
                       offset: Offset(0, 6),
                     ),
@@ -881,14 +881,14 @@ class _AIDashboardScreenState extends State<AIDashboardScreen>
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xff10b981), Color(0xff059669)],
+                    colors: [Color(0xFF9C854A), Color(0xFFBFA55E)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xff10b981).withOpacity(0.4),
+                      color: Color(0xFF9C854A).withOpacity(0.4),
                       blurRadius: 12,
                       offset: Offset(0, 6),
                     ),

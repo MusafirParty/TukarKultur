@@ -306,14 +306,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xff6366f1), Color(0xff8b5cf6)],
+          colors: [Color(0xFF9C854A), Color(0xFFBFA55E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Color(0xff6366f1).withOpacity(0.3),
+            color: Color(0xFF9C854A).withOpacity(0.3),
             blurRadius: 20,
             offset: Offset(0, 8),
           ),
@@ -456,14 +456,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xff10b981), Color(0xff059669)],
+          colors: [Color(0xFFCAB57A), Color(0xFFD4A574)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Color(0xff10b981).withOpacity(0.3),
+            color: Color(0xFFCAB57A).withOpacity(0.3),
             blurRadius: 20,
             offset: Offset(0, 8),
           ),

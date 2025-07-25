@@ -191,7 +191,7 @@ class HomeScreen extends StatelessWidget {
             MaterialPageRoute(builder: (context) => AIDashboardScreen()),
           );
         },
-        backgroundColor: Color(0xff6366f1),
+        backgroundColor: Color(0xFF9C854A),
         icon: Icon(Icons.psychology, color: Colors.white),
         label: Text(
           'AI Assistant',
@@ -395,14 +395,14 @@ class HomeScreen extends StatelessWidget {
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xffef4444), Color(0xfff97316), Color(0xfffbbf24)],
+          colors: [Color(0xFF9C854A), Color(0xFFBFA55E), Color(0xFFCAB57A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Color(0xffef4444).withOpacity(0.25),
+            color: Color(0xFF9C854A).withOpacity(0.25),
             blurRadius: 16,
             offset: Offset(0, 6),
           ),
@@ -509,12 +509,12 @@ class HomeScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'Got it! �',
+                    'Got it! 👍',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xffef4444),
+                      color: Colors.black,
                     ),
                   ),
                 ),
@@ -533,14 +533,14 @@ class HomeScreen extends StatelessWidget {
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xff8b5cf6), Color(0xff3b82f6), Color(0xff06b6d4)],
+          colors: [Color(0xFFD4A574), Color(0xFFE8C4A0), Color(0xFFCAB57A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Color(0xff8b5cf6).withOpacity(0.25),
+            color: Color(0xFFD4A574).withOpacity(0.25),
             blurRadius: 16,
             offset: Offset(0, 6),
           ),
@@ -654,7 +654,7 @@ class HomeScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xff8b5cf6),
+                      color: Colors.black,
                     ),
                   ),
                 ),
