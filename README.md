@@ -62,5 +62,8 @@ We hope `TukarKultur` can create meaningful connections with strangers and make 
 ### Allow Access
 ![Allow Access](assets/allow-access.jpeg)
 
+### AI Cultural Analysis
+![AI](assets/ai-cultural.jpeg)
+
 ### AI Features
 ![AI](assets/ai.jpeg)
